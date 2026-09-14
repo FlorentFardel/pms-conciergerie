@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import propertyRoutes from './modules/properties/property.routes.js';
-
+import unitRoutes from './modules/units/unit.routes.js';
 const app = express();
 
 app.use(cors());
@@ -15,6 +15,7 @@ app.use((_req, res, next) => {
 
 // Tes routes
 app.use('/api/properties', propertyRoutes);
+app.use('/api/units', unitRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
