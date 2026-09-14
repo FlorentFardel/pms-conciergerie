@@ -1,0 +1,201 @@
+:host {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+svg.icon {
+  display: inline-block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+
+  &.icon-btn-add { width: 16px; height: 16px; stroke-width: 2.5; }
+  &.icon-alert { width: 18px; height: 18px; stroke-width: 2; }
+  &.icon-building { width: 20px; height: 20px; stroke-width: 2; }
+  &.icon-action { width: 16px; height: 16px; stroke-width: 2; }
+  &.icon-pin { width: 15px; height: 15px; stroke-width: 2; color: #94a3b8; }
+}
+
+.properties-container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  color: #0f172a;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.25rem;
+    gap: 1.5rem;
+
+    .header-titles {
+      h2 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        color: #0f172a;
+      }
+
+      .subtitle {
+        margin: 0.35rem 0 0 0;
+        font-size: 0.95rem;
+        color: #64748b;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    white-space: nowrap;
+
+    &.btn-primary { background-color: #2563eb; color: #ffffff; &:hover { background-color: #1d4ed8; } }
+    &.btn-secondary { background-color: #ffffff; color: #334155; border-color: #cbd5e1; &:hover { background-color: #f8fafc; } }
+  }
+
+  .properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+  }
+
+  .property-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 1rem;
+
+      .title-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .building-badge {
+          width: 38px;
+          height: 38px;
+          border-radius: 0.5rem;
+          background-color: #eff6ff;
+          color: #2563eb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        h3 { margin: 0; font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+      }
+
+      .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .icon-btn {
+          width: 34px;
+          height: 34px;
+          border-radius: 0.375rem;
+          border: 1px solid #cbd5e1;
+          background-color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          &.edit-btn { color: #2563eb; &:hover { background-color: #eff6ff; border-color: #2563eb; } }
+          &.delete-btn { color: #dc2626; &:hover { background-color: #fef2f2; border-color: #dc2626; } }
+        }
+      }
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #475569;
+        font-size: 0.9rem;
+      }
+
+      .location-badge span {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .properties-container {
+    padding: 1rem;
+
+    .page-header {
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+
+      .header-titles {
+        text-align: center;
+        h2 { font-size: 1.4rem; }
+        .subtitle { font-size: 0.875rem; }
+      }
+
+      .btn {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    .properties-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

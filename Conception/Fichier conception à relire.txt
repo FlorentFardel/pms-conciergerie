@@ -1,0 +1,285 @@
+Le dossier de conception technique et fonctionnelle est disponible ci-dessous.
+
+---
+
+# **Dossier de Conception Technique et Fonctionnelle (DIDF / Cahier des Charges)**
+
+**Projet :** PMS (Property Management System) pour Conciergerie Multi-Propriétés
+
+**Auteur :** Équipe Ingénierie & Architecture logicielle
+
+**Version :** 2.0.0 (Version Intégrale)
+
+**Date :** Septembre 2026
+
+---
+
+## **1. Résumé Exécutif & Vision du Produit**
+
+Le présent document constitue le **Dossier de Conception Technique et Fonctionnelle complet** pour le développement du système de gestion de propriétés (PMS) sur-mesure. L'application s'adresse aux sociétés de conciergerie gérant un parc immobilier varié : appartements individuels, immeubles de rapport, résidences secondaires ou complexes sous-découpés en chambres louables (coliving / sous-location / chambres d'hôtes).
+
+### **1.1. Problématique Métier**
+
+Les PMS génériques du marché échouent souvent à fournir une analyse financière à l'échelle de la **chambre/unité individuelle** au sein d'un même bâtiment. Une conciergerie a besoin d'identifier immédiatement :
+
+* Quelle chambre génère du rendement et laquelle sous-performe.
+* Le taux d'occupation précis par lot/unité sur des périodes personnalisées.
+* La traçabilité exacte des frais de ménage, commissions plateformes et interventions techniques.
+
+### **1.2. Directives d'Ingénierie**
+
+* **Principes d'architecture :** SRP (Single Responsibility Principle), DRY (Don't Repeat Yourself), Clean Architecture en couches.
+* **Garde-fous de code :** Limite stricte de **< 200 lignes** par fichier source TypeScript/SCSS.
+* **Réactivité UI :** Usage des **Signals Angular 18** sans Zone.js pour des performances d'affichage maximales.
+
+---
+
+## **2. Architecture Technique & Choix Technologiques**
+
+| Composant | Technologie | Justification Technique |
+| --- | --- | --- |
+| **Frontend Framework** | Angular 18 (Standalone Components, Signals) | Structure d'entreprise stricte, typage fort avec TypeScript, architecture modulaire par composants auto-contenus. |
+| **Styling UI** | SCSS, CSS Grid / Flexbox, Angular CDK | Thématisation moderne, responsiveness avancée pour le planning multi-chambres. |
+| **Backend Runtime** | Node.js / Express (TypeScript) + `tsx` | Exécution TypeScript native à chaud, non-bloquant pour les entrées/sorties (sync iCal concurrentes). |
+| **Base de Données** | PostgreSQL 17 + Driver `pg` | Moteur relationnel ACIDE ultra-fiable, gestion stricte des contraintes de dates d'occupation, requêtes statistiques complexes. |
+| **Communication** | REST API JSON + Proxy Angular dev (`proxy.conf.json`) | Séparation stricte client/serveur, résolution native des problèmes CORS en environnement de développement. |
+
+### **2.1. Organisation en Couches Backend (3-Tier Architecture)**
+
+```text
+Client (Angular 18)
+    │  (Requête HTTP REST / JSON)
+    ▼
+[ Controller Layer ]  ───► Validation des entrées HTTP, codes status, formatage JSON.
+    │
+    ▼
+[ Service Layer ]     ───► Logique métier, calculs financiers, règles d'overlap de dates.
+    │
+    ▼
+[ Repository Layer ]  ───► Requêtes SQL brutes (PostgreSQL 17 via pool 'pg').
+    │
+    ▼
+Base de Données PostgreSQL
+
+```
+
+---
+
+## **3. Modèle Conceptuel (MCD) & Modèle Logique de Données (MLD/UMLD)**
+
+### **3.1. Dictionnaire des Entités Métier (MCD)**
+
+* **UTILISATEUR (users) :** Représente un compte sur la plateforme (Admin, Cleaner, Artisan, Client/Guest).
+* **PROPRIÉTÉ (properties) :** Représente l'immeuble ou le logement global (ex: "Villa Des Roses", "Immeuble Gambetta").
+* **UNITÉ / CHAMBRE (units) :** Entité physique louable au sein d'une propriété (ex: "Chambre 101", "Studio A"). Chaque unité possède ses propres frais de ménage, son tarif de base et ses canaux iCal.
+* **RÉSERVATION (bookings) :** Période d'occupation d'une unité spécifique avec un canal d'origine (Airbnb, Booking, Direct, Blocage Manuel).
+* **TÂCHE (tasks) :** Action d'entretien, de ménage ou d'intervention technique assignée à un utilisateur sur une unité.
+* **LOG DE SYNC (sync_logs) :** Audit trail retraçant chaque tentative de synchronisation des calendriers iCal.
+
+### **3.2. Schéma Relationnel & Règles de Gestion (UMLD / MLD)**
+
+```text
+  ┌──────────────┐         1..N         ┌──────────────┐
+  │  PROPERTIES  ├─────────────────────►│    UNITS     │
+  └──────────────┘                      └──────┬───────┘
+                                               │
+                                 ┌─────────────┴─────────────┐
+                            1..N │                           │ 1..N
+                                 ▼                           ▼
+                          ┌──────────────┐            ┌──────────────┐
+                          │   BOOKINGS   │            │    TASKS     │
+                          └──────────────┘            └──────────────┘
+                                                             ▲
+                                                        0..1 │
+                                                      ┌──────┴───────┐
+                                                      │    USERS     │
+                                                      └──────────────┘
+
+```
+
+* **PROPERTIES 1──N UNITS :** Une propriété contient une ou plusieurs chambres/unités. La suppression d'une propriété supprime ses unités en cascade.
+* **UNITS 1──N BOOKINGS :** Une chambre enregistre plusieurs réservations dans le temps. Deux réservations ne peuvent pas se chevaucher sur la même unité.
+* **UNITS 1──N TASKS :** Une chambre génère des tâches d'entretien (ex: ménage après un check-out).
+* **USERS 0..1──N TASKS :** Une tâche est attribuée à zéro ou un prestataire (Cleaner / Artisan).
+
+---
+
+## **4. Spécifications du Schéma de Base de Données (SQL DDL)**
+
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Enums stricts pour la cohérence des données
+CREATE TYPE user_role AS ENUM ('ADMIN', 'CLEANER', 'ARTISAN', 'GUEST');
+CREATE TYPE booking_channel AS ENUM ('AIRBNB', 'BOOKING', 'DIRECT', 'MANUAL_BLOCK');
+CREATE TYPE booking_status AS ENUM ('CONFIRMED', 'PENDING', 'CANCELLED', 'BLOCKED');
+CREATE TYPE task_type AS ENUM ('CLEANING', 'MAINTENANCE', 'INSPECTION');
+CREATE TYPE task_status AS ENUM ('TODO', 'IN_PROGRESS', 'COMPLETED', 'VERIFIED');
+
+-- 1. Table Utilisateurs
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role user_role NOT NULL DEFAULT 'GUEST',
+    phone VARCHAR(50),
+    preferred_language VARCHAR(5) DEFAULT 'fr',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Table Propriétés / Bâtiments
+CREATE TABLE properties (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Table Chambres / Unités Louables
+CREATE TABLE units (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    cleaning_fee DECIMAL(10, 2) DEFAULT 0.00,
+    base_price_per_night DECIMAL(10, 2) DEFAULT 0.00,
+    check_in_time TIME DEFAULT '15:00:00',
+    check_out_time TIME DEFAULT '11:00:00',
+    ical_import_url TEXT,
+    ical_export_token VARCHAR(100) UNIQUE DEFAULT uuid_generate_v4()::text,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Table Réservations & Blocages
+CREATE TABLE bookings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+    guest_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    channel booking_channel NOT NULL,
+    status booking_status NOT NULL DEFAULT 'CONFIRMED',
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    nightly_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    total_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    channel_commission DECIMAL(10, 2) DEFAULT 0.00,
+    is_manual_entry BOOLEAN DEFAULT FALSE,
+    block_reason VARCHAR(255),
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT check_dates CHECK (check_out > check_in)
+);
+
+-- 5. Table Tâches (Ménage / Maintenance)
+CREATE TABLE tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+    booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+    assigned_to UUID REFERENCES users(id) ON DELETE SET NULL,
+    type task_type NOT NULL DEFAULT 'CLEANING',
+    status task_status NOT NULL DEFAULT 'TODO',
+    scheduled_date DATE NOT NULL,
+    notes TEXT,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Table Logs iCal / Audits
+CREATE TABLE sync_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+    channel booking_channel NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index de haute performance
+CREATE INDEX idx_bookings_unit_dates ON bookings (unit_id, check_in, check_out);
+CREATE INDEX idx_tasks_unit_status ON tasks (unit_id, status, scheduled_date);
+
+```
+
+---
+
+## **5. Formules de Calculs Analytiques et Métriques KPIs**
+
+### **5.1. Taux d'Occupation par Chambre (%)**
+
+$$\text{Taux Occupation Unit} = \left( \frac{\sum \text{Nuits réservées (statut CONFIRMED)}}{\text{Nombre total de jours de la période}} \right) \times 100$$
+
+### **5.2. Revenu Net Métier par Chambre (€)**
+
+$$\text{Revenu Net} = \sum (\text{total\_price}) - \sum (\text{channel\_commission}) - \sum (\text{cleaning\_fee})$$
+
+### **5.3. RevPAR (Revenue Per Available Room)**
+
+$$\text{RevPAR} = \frac{\text{Revenu Total des Chambres}}{\text{Nombre Total de Chambres Disponibles}}$$
+
+---
+
+## **6. Spécifications UX/UI & Projections Visuelles (Wireframes Conceptualisés)**
+
+### **6.1. Maquette Vue 1 : Planning Multi-Chambres (Matrice Calendrier)**
+
+```text
++--------------------------------------------------------------------------------------------------------+
+|  PMS CONCIERGERIE  │ [ Planning ]  [ Propriétés & Chambres ]  [ Tâches Ménage ]  [ Rentabilité ]        |
++--------------------------------------------------------------------------------------------------------+
+| Filtrer : [ Toutes les Propriétés ▼ ]  [ Période: Septembre 2026 ▼ ]          [ + Réservation / Blocage ]  |
++--------------------------------------------------------------------------------------------------------+
+| LOGEMENT / CHAMBRE    │ 01 Mar  │ 02 Mer  │ 03 Jeu  │ 04 Ven  │ 05 Sam  │ 06 Dim  │ 07 Lun  │ 08 Mar |
++--------------------------------------------------------------------------------------------------------+
+| Immeuble Gambetta     │         │         │         │         │         │         │         │        |
+|  ├── Chambre 101      │ [========= AIRBNB (Dupont) =========] │         │ [=== BOOKING (Martin) ===] |
+|  ├── Chambre 102      │         │ [=== BLOCAGE: Travaux Plomberie ===]  │         │        │        |
+|  └── Studio B         │ [====================== AIRBNB (Lefebvre) ======================] │        |
++--------------------------------------------------------------------------------------------------------+
+| Villa Les Lilas       │         │         │         │         │         │         │         │        |
+|  ├── Suite Deluxe     │         │ [============ DIRECT (Durand) ============] │         │        |
++--------------------------------------------------------------------------------------------------------+
+
+```
+
+### **6.2. Maquette Vue 2 : Tableau de Bord Analytique Chambre par Chambre**
+
+```text
++--------------------------------------------------------------------------------------------------------+
+|  Rendement & Performance par Chambre — Septembre 2026                                                 |
++--------------------------------------------------------------------------------------------------------+
+|  KPIs Globaux :  Revenu Brut: 14 250 €  │  Revenu Net: 11 800 €  │  Taux d'Occupation Moyen: 82.4 %      |
++--------------------------------------------------------------------------------------------------------+
+| CHAMBRE / UNITE   │ Nuits Louées │ Taux Occ. (%) │ CA Brut (€) │ Com. Canaux │ Net Conciergerie │ Alerte |
++------------------+--------------+--------------+-------------+-------------+------------------+--------+
+| Gambetta - Ch 101│    24 / 30   │    80.0 %    │   2 400 €   │    360 €    │     1 840 €      │  OK    |
+| Gambetta - Ch 102│     9 / 30   │    30.0 % ⚠️ │     900 €   │    135 €    │       665 €      │ SOUS-PERF|
+| Gambetta - Studio│    28 / 30   │    93.3 %    │   3 360 €   │    504 €    │     2 600 €      │  TOP   |
+| Villa - Suite    │    22 / 30   │    73.3 %    │   4 400 €   │    660 €    │     3 400 €      │  OK    |
++------------------+--------------+--------------+-------------+-------------+------------------+--------+
+| ⚠️ DIAGNOSTIC SYSTEME : La "Chambre 102" présente un taux d'occupation inférieur de 50% à la moyenne   |
+| du bâtiment. Action suggérée : Réviser le prix de base à la nuitée ou vérifier le lien iCal.           |
++--------------------------------------------------------------------------------------------------------+
+
+```
+
+---
+
+## **7. Feuille de Route & Phases d'Exécution (Roadmap)**
+
+| Phase | Nom du Sprint | Contenu Technique | Statut |
+| --- | --- | --- | --- |
+| **Phase 1** | Infrastructure & Base BDD | PostgreSQL 17, Serveur Express, tsx, App Angular 18, Proxy HTTP, 6 tables créées. | **RÉALISÉ** |
+| **Phase 2** | API & UI Propriétés & Chambres | Architecture Repository/Service/Controller pour le CRUD complet des immeubles et unités. | **EN COURS** |
+| **Phase 3** | Planning Interactif Multi-Chambres | Matrice de réservation Angular (Signals), gestion des conflits de dates, blocages manuels. | **À VENIR** |
+| **Phase 4** | Gestion Opérationnelle Ménage/Maintenance | Génération automatique des tâches post-checkout, interface de suivi pour Cleaners/Artisans. | **À VENIR** |
+| **Phase 5** | Moteur iCal & Dashboard Analytics | Parser/Générateur iCal synchrone, indicateurs analytiques de rentabilité chambre par chambre. | **À VENIR** |
+
+---
+
+Tu peux copier-coller ce contenu directement dans un fichier `DOC_CONCEPTION.md` à la racine de ton projet ou le conserver comme référence absolue pour la suite des développements.

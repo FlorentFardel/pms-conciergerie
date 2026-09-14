@@ -1,0 +1,181 @@
+﻿DOSSIER DE CONCEPTION & ARCHITECTURE PMS CONCIERGERIE
+________________
+Version : 1.0.0 (Définitive - Prête pour Implémentation)
+Stack Technique : Angular 18 (Standalone Components, Signals, PWA), Node.js (Microservices), PostgreSQL 16.
+Statut : Cadrage validé, zéro dette technique, architecture composable et évolutive.
+1. VISION DU SYSTÈME & PHILOSOPHIE
+________________
+L'application est un PMS (Property Management System) & Outil d'Exploitation 360° sur mesure, agnostique du matériel (développement en local puis migration transparente sur serveur/Raspberry Pi). Il répond à 5 objectifs majeurs :
+* Automatisation Opérationnelle Totale :** Envoi des accès TTLock à H-1, relances automatiques, dispatching SAV.
+* Conformité & Sécurité Financière :** Facturation dématérialisée B2B (Factur-X 2026), cautions conditionnelles Stripe/Swikly.
+* Respect de la Vie Privée (Cloisonnement B2B/B2C) :** Séparation étanche entre les nuitées professionnelles (facturées à l'employeur) et les options personnelles (Pack Love, Champagne).
+* Adaptabilité UI/UX Ergonomique :** Support du double thème (Light Mode par défaut pour l'ergonomie visuelle longue durée + Dark Mode), 100% Responsive (Desktop & Mobile PWA 9:16).
+* Robustesse de Code :** Architecture fortement typée, verrous de concurrence hybrides (Pessimiste UX + Optimiste DB `version`), Feature Flags à chaud.
+2. ARCHITECTURE TECHNIQUE & ERGONOMIE VISUELLE
+________________
+2.1. Stratégie UI/UX : Light Mode, Slate Theme & Format Mobile 9:16
+Pour éviter la fatigue oculaire lors de sessions de travail prolongées (plusieurs heures sur ordinateur) tout en garantissant un usage mobile terrain optimal :
+* Thème Clair par Défaut (Soft Slate Light) :** Fond gris très doux (`#F8FAFC`), cartes blanches pur (`#FFFFFF`) avec ombres légères, texte contraste élevé (`#0F172A`). Le Dark Mode reste activable en 1 clic via un interrupteur global.
+* Format Responsive Mobile (Écran Smartphone 9:16 / 390x844px) :**
+   * Navigation Basse (Bottom Navigation Bar) :** Boutons tactiles "Pouce" pour basculer entre Dashboard, Planning, Inbox, SAV et Finance.
+   * Planning Agenda Vertical :** Les grilles larges multi-colonnes du PC se transforment sur smartphone en un fil chronologique vertical fluide avec filtres rapides par bâtiment.
+   * Cartes Tactiles Compactes :** Affichage optimisé pour l'action rapide en 1 tap (Déverrouiller serrure, Valider ménage, Renvoyer code SMS).
+2.2. Diagramme de Composants Frontend (Angular 18)
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   ANGULAR 18 STANDALONE APP                                     │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ ├── ShellComponent (ThemeService: Light/Dark Switcher, Layout Responsive, Sidebar/BottomBar)  │
+│ ├── Core / Services (AuthService, TTLockService, InvoicingService, FeatureFlagService)        │
+│ └── State Management (Angular Signals + RxJS pour WebSockets Live)                             │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                          VUES CLÉS                                              │
+│ ├── DashboardView (KPIs, Alertes H-1, Live Lock Controls)                                       │
+│ ├── CalendarView (Multi-Chambres Desktop Grid & Timeline Agenda Mobile)                         │
+│ ├── InboxView (Hub Multi-Canal, SMS Fallback, Chatbot IA, Auto-Reply)                            │
+│ ├── LogisticsView (PWA Ménage Offline, Dispatching SAV, Signalement Casse/Réassort)             │
+│ ├── FinanceView (Générateur Factur-X B2B/B2C, Compta Proprio 1er du mois, Simulation AirDNA)   │
+│ └── GuestWelcomeView (PWA Client - Magic Link, Regles, Wi-Fi, Code TTLock H-1, Boutique Upsell) │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+3. SPÉCIFICATIONS FONCTIONNELLES DÉTAILLÉES
+________________
+                                
+Module
+	Fonctionnalités Métier Clés
+	Gains Operational & Financiers
+	Accès Autonomes (TTLock)
+	• Code PIN unique multi-serrures (Bâtiment + Chambre)
+• Activation dynamique à H-1 (ou ajusté Early/Late)
+• Blocage conditionnel si caution non validée
+• Support complet des créneaux Day-Use (à la minute)
+	• Zéro remise de clé physique
+• Sécurité financière 100% garantie avant entrée
+	Finances & B2B (Factur-X 2026)
+	• Émission conforme e-invoicing B2B 2026
+• Cloisonnement B2B/B2C (Options hors facture pro)
+• Relevés de gestion propriétaires le 1er du mois en 1 clic
+• Garde-fou "Prix Plancher" anti-erreur de saisie
+	• Conformité légale absolue
+• Respect de la vie privée du salarié
+• Gain de temps comptable énorme
+	Logistique & Field PWA
+	• PWA Ménage offline avec checklists photos
+• Dispatching SAV automatique vers artisans (WhatsApp/SMS)
+• Posage automatique de `MAINTENANCE_LOCK` sur calendrier
+• Signalement casse & réassort immédiat
+	• Qualité 5 étoiles constante
+• Protection contre la surréservation en cas de panne
+	Yield & Upselling
+	• Boutique d'options sur Livret d'Accueil (Pack Love, Champagne)
+• Revente automatique flash post-annulation
+• Extension de séjour automatique à J-1 (-20% si nuitée vide)
+• Listing Push API (Airbnb & Booking)
+	• 100% de marge conciergerie sur les options
+• Taux d'occupation maximisé
+	Expérience Voyageur
+	• Livret d'accueil PWA par lien unique (Magic Link Token)
+• Filtre de satisfaction précoce H+2 (désamorçage avis)
+• Rappel éco-responsable H-2 (extinction Sauna/Balnéo)
+• Attestation de séjour PDF en 1 clic
+	• Note moyenne préservée
+• Économies d'énergie directes
+	4. MODÈLE LOGIQUE DES DONNÉES (POSTGRESQL 16)
+________________
+-- 1. UTILISATEURS & RBAC
+CREATE TABLE users (
+   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   email VARCHAR(255) UNIQUE NOT NULL,
+   password_hash VARCHAR(255) NOT NULL,
+   first_name VARCHAR(100) NOT NULL,
+   last_name VARCHAR(100) NOT NULL,
+   phone_number VARCHAR(30),
+   role VARCHAR(30) NOT NULL DEFAULT 'OWNER',
+   preferred_notification_channel VARCHAR(30) DEFAULT 'SMS',
+   created_at TIMESTAMPTZ DEFAULT NOW(),
+   version INTEGER DEFAULT 1 NOT NULL
+);
+
+-- 2. LOGEMENTS & CHAMBRES
+CREATE TABLE logements (
+   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+   name VARCHAR(150) NOT NULL,
+   address TEXT NOT NULL,
+   city VARCHAR(100) NOT NULL,
+   zip_code VARCHAR(20) NOT NULL,
+   version INTEGER DEFAULT 1 NOT NULL
+);
+
+CREATE TABLE rooms (
+   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   logement_id UUID REFERENCES logements(id) ON DELETE CASCADE,
+   name VARCHAR(100) NOT NULL,
+   allows_day_use BOOLEAN DEFAULT false,
+   min_price_floor NUMERIC(10,2) DEFAULT 50.00,
+   version INTEGER DEFAULT 1 NOT NULL
+);
+
+-- 3. RÉSERVATIONS & ACCÈS TOKEN (MAGIC LINK)
+CREATE TABLE reservations (
+   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+   access_token UUID DEFAULT gen_random_uuid() UNIQUE NOT NULL,
+   guest_name VARCHAR(150) NOT NULL,
+   guest_phone VARCHAR(30),
+   guest_email VARCHAR(255),
+   booking_channel VARCHAR(50) NOT NULL,
+   booking_type VARCHAR(30) DEFAULT 'OVERNIGHT',
+   check_in_datetime TIMESTAMPTZ NOT NULL,
+   check_out_datetime TIMESTAMPTZ NOT NULL,
+   scheduled_code_dispatch_at TIMESTAMPTZ NOT NULL,
+   payout_amount NUMERIC(10,2) NOT NULL,
+   concierge_fee NUMERIC(10,2) NOT NULL,
+   status VARCHAR(30) DEFAULT 'CONFIRMED',
+   version INTEGER DEFAULT 1 NOT NULL
+);
+
+-- 4. FACTURATION DÉMATÉRIALISÉE B2B (FACTUR-X)
+CREATE TABLE invoices (
+   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   reservation_id UUID REFERENCES reservations(id) ON DELETE RESTRICT,
+   invoice_number VARCHAR(50) UNIQUE NOT NULL,
+   invoice_type VARCHAR(20) NOT NULL, -- 'B2B', 'B2C'
+   invoice_scope VARCHAR(30) DEFAULT 'STAY_ONLY', -- 'STAY_ONLY', 'UPSELL_ONLY'
+   is_private_billing BOOLEAN DEFAULT false,
+   client_company_name VARCHAR(150),
+   client_siret VARCHAR(20),
+   client_vat_number VARCHAR(30),
+   amount_ht NUMERIC(10,2) NOT NULL,
+   vat_amount NUMERIC(10,2) NOT NULL,
+   amount_ttc NUMERIC(10,2) NOT NULL,
+   facturx_xml_url TEXT,
+   einvoicing_status VARCHAR(40) DEFAULT 'DRAFT',
+   created_at TIMESTAMPTZ DEFAULT NOW(),
+   version INTEGER DEFAULT 1 NOT NULL
+);
+
+-- 5. SERRURES & CODE TTLOCK
+CREATE TABLE locks (
+   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+   ttlock_lock_id VARCHAR(100) UNIQUE NOT NULL,
+   lock_type VARCHAR(50) NOT NULL,
+   lock_name VARCHAR(100) NOT NULL,
+   battery_level INTEGER
+);
+
+-- 6. FEATURE FLAGS SYSTEM
+CREATE TABLE system_feature_flags (
+   feature_key VARCHAR(100) PRIMARY KEY,
+   is_enabled BOOLEAN NOT NULL DEFAULT true,
+   description TEXT,
+   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+5. ENGAGEMENT DE QUALITÉ DE CODE (DEVELOPER STANDARD)
+________________
+* 100% Standalone Components :** Architecture Angular 18 moderne, aucun NgModule inutile.
+* Typage Strict (TypeScript) :** Aucune utilisation du type `any`. Toutes les entités possèdent une interface dédiée dans `/core/models`.
+* JSDoc Intégrale :** Chaque service, composant et fonction contient une documentation JSDoc explicite précisant le rôle métier, les paramètres et les règles de gestion associées.
+* Atomic Design :** Micro-composants réutilisables (`ui-card`, `ui-button`, `lock-status-chip`, `invoice-badge`).
+* Document Avenir-Proof :** Ce présent dossier est inséré sous forme de fichier `ARCHITECTURE.md` à la racine du dépôt Git du projet.
