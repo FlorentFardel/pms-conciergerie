@@ -1,0 +1,90 @@
+<!-- ========================================================================= -->
+<!-- CONTENEUR PRINCIPAL DE LA LISTE DES LOGEMENTS                             -->
+<!-- ========================================================================= -->
+<div class="units-container">
+
+  <!-- CAS 1 : VUE DÉTAILLÉE DU LOGEMENT SÉLECTIONNÉ -->
+  @if (activeUnitForDetail()) {
+    <app-unit-detail
+      [unitId]="activeUnitForDetail()!.id"
+      (back)="onCloseDetail()"
+      (saved)="onCloseDetail()"
+    ></app-unit-detail>
+  } 
+
+  <!-- CAS 2 : VUE LISTE AVEC CARTES (Si aucun logement n'est sélectionné) -->
+  @else {
+    <header class="header">
+      <h2>Logements ({{ units().length }})</h2>
+      
+      <div class="actions-bar">
+        <!-- Toggle Global -->
+        @if (units().length > 0) {
+          <button 
+            type="button" 
+            class="btn-toggle-global" 
+            [class.active]="areAllUnitsActive()"
+            (click)="toggleAllUnits()"
+          >
+            {{ areAllUnitsActive() ? 'Tout désactiver' : 'Tout activer' }}
+          </button>
+        }
+
+        <!-- Bouton Ajouter -->
+        <button type="button" class="btn-primary" (click)="openCreateModal()">
+          + Ajouter un logement
+        </button>
+      </div>
+    </header>
+
+    <!-- Bandeau de notification (Succès / Échec) -->
+    @if (notificationMessage(); as notif) {
+      <div class="toast-notification" [class.success]="notif.type === 'success'" [class.error]="notif.type === 'error'">
+        <span>{{ notif.text }}</span>
+        <button type="button" class="close-notif" (click)="notificationMessage.set(null)">&times;</button>
+      </div>
+    }
+
+    <!-- Affichage d'erreur globale -->
+    @if (errorMessage()) {
+      <div class="error-banner" role="alert">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Affichage en cours de chargement -->
+    @if (loading()) {
+      <div class="loading-spinner">
+        <p>Chargement des logements...</p>
+      </div>
+    } @else {
+
+      <!-- Grille de cartes aérée (Pleine largeur) -->
+      @if (units().length > 0) {
+        <div class="cards-grid">
+          @for (unit of units(); track unit.id) {
+            <app-unit-card
+              [unit]="unit"
+              (selectUnit)="onSelectUnit($event)"
+              (toggleStatus)="toggleUnitStatus($event)"
+            ></app-unit-card>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <p>Aucun logement enregistré pour le moment.</p>
+        </div>
+      }
+    }
+
+    <!-- Modale de création / édition -->
+    @if (showModal()) {
+      <app-unit-modal
+        [propertyId]="propertyId || ''"
+        [unitToEdit]="selectedUnit()"
+        (closed)="onModalClosed(false)"
+        (saved)="onModalClosed(true)"
+      ></app-unit-modal>
+    }
+  }
+</div>

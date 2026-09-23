@@ -1,0 +1,188 @@
+/**
+ * @file card.scss
+ * @description Styles SCSS Mobile-First pour le composant UnitCardComponent.
+ */
+
+// =============================================================================
+// VARIABLES LOCALES
+// =============================================================================
+$font-family-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+$color-primary: #2563eb;
+$color-bg-card: #ffffff;
+$color-bg-metric: #f8fafc;
+$color-border: #e2e8f0;
+
+$color-text-main: #0f172a;
+$color-text-muted: #64748b;
+
+$color-success-bg: #d1fae5;
+$color-success-text: #065f46;
+$color-error-bg: #fee2e2;
+$color-error-text: #991b1b;
+
+// =============================================================================
+// STRUCTURE DE LA CARTE (FULL WIDTH & PROPRE)
+// =============================================================================
+.unit-card {
+  font-family: $font-family-sans;
+  background: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  // En-tête de la carte
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+
+    .title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .unit-title {
+        margin: 0;
+        font-family: $font-family-sans;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: $color-text-main;
+
+        .unit-subname {
+          font-size: 0.95rem;
+          font-weight: 400;
+          color: $color-text-muted;
+          margin-left: 0.25rem;
+        }
+      }
+
+      .type-badge {
+        display: inline-block;
+        background-color: #eff6ff;
+        color: $color-primary;
+        border: 1px solid #bfdbfe;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+      }
+    }
+
+    /* Badge Statut cliquable */
+    .status-badge {
+      border: none;
+      background: transparent;
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-family: $font-family-sans;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1.2;
+
+      &.active {
+        background-color: $color-success-bg;
+        color: $color-success-text;
+      }
+
+      &.inactive {
+        background-color: $color-error-bg;
+        color: $color-error-text;
+      }
+    }
+  }
+
+  // Grille des 5 caractéristiques sur une seule ligne
+  .card-body {
+    width: 100%;
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.75rem;
+      width: 100%;
+
+      .metric-item {
+        background-color: $color-bg-metric;
+        border: 1px solid #f1f5f9;
+        padding: 0.6rem 0.5rem;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-width: 0; /* Empêche le débordement de texte */
+
+        .metric-label {
+          font-family: $font-family-sans;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: $color-text-muted;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+        }
+
+        .metric-value {
+          font-family: $font-family-sans;
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: $color-text-main;
+          margin-top: 0.2rem;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
+  // Pied de carte
+  .card-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.6rem;
+    border-top: 1px solid #f1f5f9;
+
+    .btn-manage {
+      background: none;
+      border: none;
+      padding: 0.35rem 0.6rem;
+      font-family: $font-family-sans;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: $color-primary;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: #eff6ff;
+      }
+    }
+  }
+}
+
+// Adaptation petits écrans mobiles
+@media (max-width: 640px) {
+  .unit-card {
+    .card-body {
+      .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  }
+}

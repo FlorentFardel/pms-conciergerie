@@ -1,0 +1,97 @@
+<!-- ========================================================================= -->
+<!-- VUE PRINCIPALE : GESTION DES PROPRIÉTÉS                                   -->
+<!-- ========================================================================= -->
+<div class="properties-container">
+
+  <!-- ----------------------------------------------------------------------- -->
+  <!-- 1. VUE DÉTAILLÉE D'UNE PROPRIÉTÉ (DÉLÉGUÉE À PROPERTY-DETAIL)           -->
+  <!-- ----------------------------------------------------------------------- -->
+  @if (activePropertyId(); as propId) {
+    <app-property-detail
+      [propertyId]="propId"
+      (back)="closePropertyDetail()"
+    ></app-property-detail>
+
+  <!-- ----------------------------------------------------------------------- -->
+  <!-- 2. VUE LISTE GLOBALE DES PROPRIÉTÉS                                    -->
+  <!-- ----------------------------------------------------------------------- -->
+  } @else {
+    <header class="page-header">
+      <div class="header-titles">
+        <h2>Gestion des Propriétés</h2>
+        <p class="subtitle">Gérez vos immeubles, adresses et détails du parc immobilier.</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+        <svg class="icon icon-btn-add" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Ajouter une propriété
+      </button>
+    </header>
+
+    <!-- Affichage des erreurs globales de chargement -->
+    @if (propertyService.error()) {
+      <div class="alert alert-danger">
+        <svg class="icon icon-alert" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ propertyService.error() }}</span>
+      </div>
+    }
+
+    <!-- Indique le chargement des propriétés -->
+    @if (propertyService.loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Chargement de vos propriétés en cours...</p>
+      </div>
+    } @else {
+      <!-- Grille d'affichage des cartes de propriétés -->
+      <div class="properties-grid">
+        @for (prop of propertyService.properties(); track prop.id) {
+          <app-property-card
+            [property]="prop"
+            (selectProperty)="onSelectProperty($event)"
+            (edit)="openEditModal($event)"
+            (delete)="deleteProperty($event)"
+            (createUnit)="openUnitModalForProperty($event)"
+            (refresh)="refreshProperties()"
+          ></app-property-card>
+        } @empty {
+          <div class="empty-state">
+            <h4>Aucune propriété enregistrée</h4>
+            <p>Commencez par ajouter votre premier bâtiment.</p>
+            <button type="button" class="btn btn-primary" (click)="openCreateModal()">Créer un bien</button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- MODALES                                                               -->
+    <!-- --------------------------------------------------------------------- -->
+    
+    <!-- Modale de création / édition de propriété -->
+    @if (showModal()) {
+      <app-property-modal
+        [propertyToEdit]="selectedProperty()"
+        [errorMessage]="modalError()"
+        (close)="closeModal()"
+        (save)="handleSaveProperty($event)"
+      ></app-property-modal>
+    }
+
+    <!-- Modale de création complète d'un logement -->
+    @if (showUnitModal() && selectedPropertyForUnit(); as prop) {
+      <app-unit-modal
+        [propertyId]="prop.id"
+        (closed)="closeUnitModal()"
+        (saved)="onUnitSaved()"
+      ></app-unit-modal>
+    }
+  }
+
+</div>

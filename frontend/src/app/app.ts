@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PropertiesListComponent } from './features/properties/properties-list/list';
+import { RouterOutlet } from '@angular/router';
 
+/**
+ * @component AppComponent
+ * @description Composant racine de l'application PMS Conciergerie.
+ */
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, PropertiesListComponent],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

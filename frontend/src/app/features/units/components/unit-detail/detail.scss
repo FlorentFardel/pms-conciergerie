@@ -1,0 +1,265 @@
+/**
+ * @file detail.scss
+ * @description Styles SCSS Mobile-First pour la vue détaillée d'un logement.
+ */
+
+$font-family-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+$color-primary: #2563eb;
+$color-primary-hover: #1d4ed8;
+$color-bg-page: #f8fafc;
+$color-bg-card: #ffffff;
+$color-border: #e2e8f0;
+
+$color-text-main: #0f172a;
+$color-text-muted: #64748b;
+
+$color-success-bg: #d1fae5;
+$color-success-text: #065f46;
+$color-error-bg: #fee2e2;
+$color-error-text: #991b1b;
+
+.unit-detail-container {
+  font-family: $font-family-sans;
+  padding: 0.875rem;
+  background-color: $color-bg-page;
+  min-height: 100vh;
+
+  .loading-state, .placeholder-tab {
+    background: $color-bg-card;
+    padding: 2rem 1rem;
+    border-radius: 12px;
+    border: 1px solid $color-border;
+    text-align: center;
+    color: $color-text-muted;
+
+    h4 {
+      margin-top: 0;
+      color: $color-text-main;
+      font-size: 1rem;
+    }
+  }
+
+  /* Style bouton bleu uniforme */
+  .btn-primary {
+    background-color: $color-primary;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: $font-family-sans;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.15s ease-in-out;
+
+    &:hover {
+      background-color: $color-primary-hover;
+    }
+
+    &:active {
+      background-color: #1e40af;
+    }
+  }
+
+  /* En-tête mobile */
+  .detail-header {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    .btn-back {
+      /* Bouton bleu hérité de btn-primary */
+      margin-bottom: 0.25rem;
+    }
+
+    .header-title {
+      h2 {
+        margin: 0;
+        font-family: $font-family-sans;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: $color-text-main;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+
+        .unit-name {
+          font-weight: 400;
+          color: $color-text-muted;
+          font-size: 1rem;
+        }
+
+        .badge {
+          background-color: #eff6ff;
+          color: $color-primary;
+          border: 1px solid #bfdbfe;
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 0.2rem 0.5rem;
+          border-radius: 9999px;
+        }
+      }
+    }
+  }
+
+  .tabs-nav {
+    display: flex;
+    gap: 0.35rem;
+    border-bottom: 2px solid $color-border;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-item {
+      background: none;
+      border: none;
+      padding: 0.75rem 0.875rem;
+      min-height: 44px;
+      font-family: $font-family-sans;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $color-text-muted;
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s ease-in-out;
+      flex-shrink: 0;
+
+      &.active {
+        color: $color-primary;
+        font-weight: 700;
+        border-bottom-color: $color-primary;
+      }
+    }
+  }
+
+  .overview-section {
+    background: $color-bg-card;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid $color-border;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    .overview-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid $color-border;
+
+      h3 {
+        margin: 0;
+        font-family: $font-family-sans;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: $color-text-main;
+      }
+
+      .btn-primary {
+        width: 100%;
+        min-height: 44px;
+      }
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+
+      .info-card {
+        background-color: #f8fafc;
+        border: 1px solid #f1f5f9;
+        padding: 0.75rem 0.875rem;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .label {
+          font-family: $font-family-sans;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          color: $color-text-muted;
+        }
+
+        .value {
+          font-family: $font-family-sans;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: $color-text-main;
+
+          &.status-text {
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background-color: $color-error-bg;
+            color: $color-error-text;
+
+            &.active {
+              background-color: $color-success-bg;
+              color: $color-success-text;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .alert-danger {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 0.875rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .unit-detail-container {
+    padding: 1.5rem;
+
+    .overview-section {
+      padding: 1.5rem;
+
+      .overview-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        .btn-primary {
+          width: auto;
+          min-height: auto;
+        }
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+
+        .info-card {
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: flex-start;
+          gap: 0.25rem;
+        }
+      }
+    }
+  }
+}

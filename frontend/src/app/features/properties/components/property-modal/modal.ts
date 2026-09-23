@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Property, CreatePropertyDto } from '../../../../core/models/property';
+import { Property, CreatePropertyDto } from '../../models/property';
 
 /**
  * @component PropertyModalComponent

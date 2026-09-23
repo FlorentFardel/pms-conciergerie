@@ -1,0 +1,220 @@
+/* ==========================================================================
+   COMPOSANT : PropertiesListComponent (Consolidé & Simplifié)
+   ========================================================================== */
+
+$font-family-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+$color-primary: #2563eb;
+$color-primary-hover: #1d4ed8;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@keyframes spin {
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+svg.icon {
+  display: inline-block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+
+  &.icon-btn-add { 
+    width: 1rem; 
+    height: 1rem; 
+    stroke-width: 2.5; 
+  }
+
+  &.icon-alert { 
+    width: 1.125rem; 
+    height: 1.125rem; 
+    stroke-width: 2; 
+  }
+}
+
+.properties-container {
+  font-family: $font-family-sans;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  color: #0f172a;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.25rem;
+    gap: 1.5rem;
+
+    .header-titles {
+      h2 {
+        margin: 0;
+        font-family: $font-family-sans;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        color: #0f172a;
+      }
+
+      .subtitle {
+        margin: 0.35rem 0 0;
+        font-family: $font-family-sans;
+        font-size: 0.95rem;
+        color: #64748b;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+
+    &.alert-danger {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: #64748b;
+
+    .spinner {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 3px solid #e2e8f0;
+      border-top-color: $color-primary;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background-color: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.875rem;
+    text-align: center;
+
+    h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: #0f172a;
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  }
+
+  /* Boutons uniformisés */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-family: $font-family-sans;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    white-space: nowrap;
+
+    &.btn-primary { 
+      background-color: $color-primary; 
+      color: #ffffff; 
+
+      &:hover { 
+        background-color: $color-primary-hover; 
+      }
+
+      &:active {
+        background-color: #1e40af;
+      }
+    }
+  }
+
+  .properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+  }
+}
+
+/* Passage en colonne unique sur mobile */
+@media (max-width: 640px) {
+  .properties-container {
+    padding: 1rem;
+
+    .page-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+
+      .header-titles {
+        text-align: left;
+
+        h2 { 
+          font-size: 1.4rem; 
+        }
+
+        .subtitle { 
+          font-size: 0.875rem; 
+        }
+      }
+
+      .btn {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    .properties-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
