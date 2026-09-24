@@ -10,20 +10,14 @@ export class PropertyService {
   private readonly repository = new PropertyRepository();
 
   /**
-   * @method getAllProperties
-   * @description Récupère la liste intégrale des propriétés.
-   * @returns {Promise<Property[]>}
+   * Récupère la liste intégrale des propriétés.
    */
   async getAllProperties(): Promise<Property[]> {
     return this.repository.findAll();
   }
 
   /**
-   * @method getPropertyById
-   * @description Recherche une propriété par son identifiant unique.
-   * @param {string} id - Identifiant UUID de la propriété.
-   * @returns {Promise<Property>}
-   * @throws {Error} Si la propriété n'existe pas.
+   * Recherche une propriété par son identifiant unique (UUID).
    */
   async getPropertyById(id: string): Promise<Property> {
     const property = await this.repository.findById(id);
@@ -34,11 +28,18 @@ export class PropertyService {
   }
 
   /**
-   * @method createProperty
-   * @description Valide et crée une nouvelle propriété après contrôle des champs et d'unicité d'adresse.
-   * @param {CreatePropertyInput} data - Données de création.
-   * @returns {Promise<Property>}
-   * @throws {Error} Si des champs obligatoires sont manquants ou l'adresse déjà enregistrée.
+   * Recherche une propriété par son slug lisible.
+   */
+  async getPropertyBySlug(slug: string): Promise<Property> {
+    const property = await this.repository.findBySlug(slug);
+    if (!property) {
+      throw new Error(`Propriété avec le slug "${slug}" introuvable.`);
+    }
+    return property;
+  }
+
+  /**
+   * Valide et crée une nouvelle propriété après contrôle d'unicité.
    */
   async createProperty(data: CreatePropertyInput): Promise<Property> {
     if (!data.name || !data.address || !data.city || !data.postal_code) {
@@ -54,11 +55,7 @@ export class PropertyService {
   }
 
   /**
-   * @method updateProperty
-   * @description Met à jour une propriété avec contrôle d'unicité sur l'adresse modifiée.
-   * @param {string} id - Identifiant de la propriété.
-   * @param {UpdatePropertyInput} data - Champs à modifier.
-   * @returns {Promise<Property>}
+   * Met à jour une propriété avec contrôle d'unicité d'adresse.
    */
   async updateProperty(id: string, data: UpdatePropertyInput): Promise<Property> {
     const existing = await this.repository.findById(id);
@@ -84,10 +81,7 @@ export class PropertyService {
   }
 
   /**
-   * @method deleteProperty
-   * @description Supprime une propriété par son identifiant.
-   * @param {string} id - Identifiant de la propriété.
-   * @returns {Promise<void>}
+   * Supprime une propriété par son identifiant.
    */
   async deleteProperty(id: string): Promise<void> {
     const deleted = await this.repository.delete(id);

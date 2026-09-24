@@ -4,40 +4,85 @@ import { Property, CreatePropertyInput, UpdatePropertyInput } from './property.t
 /**
  * @class PropertyRepository
  * @description Couche d'accès aux données (DAL) pour la table `properties`.
- * Exécute l'ensemble des requêtes SQL (PostgreSQL/Node-Postgres).
  */
 export class PropertyRepository {
   /**
-   * @method findAll
-   * @description Récupère la liste complète des propriétés triées par date de création descendante.
-   * @returns {Promise<Property[]>} Liste des propriétés enregistrées.
+   * Récupère la liste complète des propriétés avec leurs logements rattachés.
    */
   async findAll(): Promise<Property[]> {
-    const query = 'SELECT * FROM properties ORDER BY created_at DESC';
+    const query = `
+      SELECT 
+        p.*,
+        COALESCE(
+          json_agg(
+            u.* 
+            ORDER BY 
+              u.created_at ASC,
+              CAST(NULLIF(regexp_replace(u.unit_number, '\\D', '', 'g'), '') AS INTEGER) ASC NULLS LAST
+          ) FILTER (WHERE u.id IS NOT NULL), 
+          '[]'
+        ) AS units
+      FROM properties p
+      LEFT JOIN units u ON u.property_id = p.id
+      GROUP BY p.id
+      ORDER BY p.created_at DESC;
+    `;
     const { rows } = await db.query<Property>(query);
     return rows;
   }
 
   /**
-   * @method findById
-   * @description Recherche une propriété par son identifiant unique.
-   * @param {string} id - Identifiant UUID de la propriété.
-   * @returns {Promise<Property | null>} La propriété correspondante ou `null` si introuvable.
+   * Recherche une propriété par son identifiant unique UUID.
    */
   async findById(id: string): Promise<Property | null> {
-    const query = 'SELECT * FROM properties WHERE id = $1';
+    const query = `
+      SELECT 
+        p.*,
+        COALESCE(
+          json_agg(
+            u.* 
+            ORDER BY 
+              u.created_at ASC,
+              CAST(NULLIF(regexp_replace(u.unit_number, '\\D', '', 'g'), '') AS INTEGER) ASC NULLS LAST
+          ) FILTER (WHERE u.id IS NOT NULL), 
+          '[]'
+        ) AS units
+      FROM properties p
+      LEFT JOIN units u ON u.property_id = p.id
+      WHERE p.id = $1
+      GROUP BY p.id;
+    `;
     const { rows } = await db.query<Property>(query, [id]);
     return rows[0] || null;
   }
 
   /**
-   * @method findDuplicate
-   * @description Vérifie l'existence d'un doublon sur l'ensemble adresse / code postal / ville (insensible à la casse et aux espaces).
-   * @param {string} address - Adresse de la propriété.
-   * @param {string} postal_code - Code postal.
-   * @param {string} city - Ville.
-   * @param {string} [excludeId] - Identifiant de la propriété à exclure du contrôle (en cas de mise à jour).
-   * @returns {Promise<Property | null>} La propriété en doublon si elle existe, sinon `null`.
+   * Recherche une propriété par son slug lisible.
+   */
+  async findBySlug(slug: string): Promise<Property | null> {
+    const query = `
+      SELECT 
+        p.*,
+        COALESCE(
+          json_agg(
+            u.* 
+            ORDER BY 
+              u.created_at ASC,
+              CAST(NULLIF(regexp_replace(u.unit_number, '\\D', '', 'g'), '') AS INTEGER) ASC NULLS LAST
+          ) FILTER (WHERE u.id IS NOT NULL), 
+          '[]'
+        ) AS units
+      FROM properties p
+      LEFT JOIN units u ON u.property_id = p.id
+      WHERE p.slug = $1
+      GROUP BY p.id;
+    `;
+    const { rows } = await db.query<Property>(query, [slug]);
+    return rows[0] || null;
+  }
+
+  /**
+   * Vérifie l'existence d'un doublon sur l'ensemble adresse / code postal / ville.
    */
   async findDuplicate(
     address: string, 
@@ -63,50 +108,61 @@ export class PropertyRepository {
   }
 
   /**
-   * @method create
-   * @description Insère une nouvelle propriété en base de données.
-   * @param {CreatePropertyInput} data - Données du formulaire de création.
-   * @returns {Promise<Property>} La propriété fraîchement créée.
+   * Insère une nouvelle propriété en générant automatiquement son slug.
    */
   async create(data: CreatePropertyInput): Promise<Property> {
     const query = `
-      INSERT INTO properties (name, address, city, postal_code)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
+      INSERT INTO properties (name, slug, address, city, postal_code)
+      VALUES (
+        $1::text, 
+        COALESCE($2::text, generate_slug($1::text)), 
+        $3::text, 
+        $4::text, 
+        $5::text
+      )
+      RETURNING *, '[]'::json AS units
     `;
-    const values = [data.name, data.address, data.city, data.postal_code];
+    const values = [data.name, data.slug ?? null, data.address, data.city, data.postal_code];
     const { rows } = await db.query<Property>(query, values);
     return rows[0];
   }
 
   /**
-   * @method update
-   * @description Met à jour partiellement les informations d'une propriété existante.
-   * @param {string} id - Identifiant de la propriété à modifier.
-   * @param {UpdatePropertyInput} data - Champs à mettre à jour.
-   * @returns {Promise<Property | null>} La propriété mise à jour ou `null` si non trouvée.
+   * Met à jour une propriété existante et recalcule le slug si le nom change.
    */
   async update(id: string, data: UpdatePropertyInput): Promise<Property | null> {
     const query = `
       UPDATE properties
-      SET name = COALESCE($1, name),
-          address = COALESCE($2, address),
-          city = COALESCE($3, city),
-          postal_code = COALESCE($4, postal_code),
-          is_active = COALESCE($5, is_active)
-      WHERE id = $6
+      SET name = COALESCE($1::text, name),
+          slug = CASE 
+            WHEN $1::text IS NOT NULL THEN generate_slug($1::text)
+            ELSE COALESCE($2::text, slug)
+          END,
+          address = COALESCE($3::text, address),
+          city = COALESCE($4::text, city),
+          postal_code = COALESCE($5::text, postal_code),
+          is_active = COALESCE($6::boolean, is_active)
+      WHERE id = $7
       RETURNING *
     `;
-    const values = [data.name, data.address, data.city, data.postal_code, data.is_active, id];
+    const values = [
+      data.name ?? null, 
+      data.slug ?? null, 
+      data.address ?? null, 
+      data.city ?? null, 
+      data.postal_code ?? null, 
+      data.is_active ?? null, 
+      id
+    ];
+    
     const { rows } = await db.query<Property>(query, values);
-    return rows[0] || null;
+    if (!rows[0]) return null;
+
+    return this.findById(id);
   }
 
   /**
-   * @method delete
-   * @description Supprime la ligne correspondant à l'identifiant en base.
-   * @param {string} id - Identifiant de la propriété.
-   * @returns {Promise<boolean>} `true` si la suppression a affecté une ligne, sinon `false`.
+   * Supprime une propriété par son identifiant.
    */
   async delete(id: string): Promise<boolean> {
     const query = 'DELETE FROM properties WHERE id = $1';

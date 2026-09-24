@@ -3,115 +3,62 @@ import { Unit, CreateUnitInput, UpdateUnitInput } from './unit.types.js';
 
 /**
  * @class UnitService
- * @description Service métier gérant les règles de gestion et la validation des logements (Units).
+ * @description Service métier backend pour la gestion des logements (Units).
  */
 export class UnitService {
-  /** Instance du repository pour l'accès aux données */
   private readonly repository = new UnitRepository();
 
   /**
-   * @method getAllUnits
-   * @description Récupère l'ensemble des logements.
-   * @returns {Promise<Unit[]>} Liste de tous les logements.
+   * Récupère tous les logements enregistrés.
    */
   async getAllUnits(): Promise<Unit[]> {
-    return this.repository.findAll();
+    return await this.repository.findAll();
   }
 
   /**
-   * @method getUnitsByPropertyId
-   * @description Récupère les logements rattachés à une propriété.
-   * @param {string} propertyId - Identifiant UUID de la propriété.
-   * @returns {Promise<Unit[]>} Liste des logements filtrés.
+   * Récupère la liste des logements rattachés à une propriété spécifique.
    */
   async getUnitsByPropertyId(propertyId: string): Promise<Unit[]> {
-    return this.repository.findByPropertyId(propertyId);
+    return await this.repository.findByPropertyId(propertyId);
   }
 
   /**
-   * @method getUnitById
-   * @description Recherche un logement par son identifiant unique.
-   * @param {string} id - Identifiant UUID du logement.
-   * @returns {Promise<Unit>} Le logement trouvé.
-   * @throws {Error} Si le logement n'existe pas.
+   * Récupère un logement par son identifiant unique.
    */
   async getUnitById(id: string): Promise<Unit> {
     const unit = await this.repository.findById(id);
     if (!unit) {
-      throw new Error('Logement non trouvé');
+      throw new Error(`Logement avec l'ID ${id} introuvable.`);
     }
     return unit;
   }
 
   /**
-   * @method createUnit
-   * @description Valide et crée un nouveau logement pour une propriété donnée.
-   * @param {CreateUnitInput} data - Données du logement à créer.
-   * @returns {Promise<Unit>} Le logement créé.
-   * @throws {Error} Si des données sont manquantes, si la capacité est invalide ou si le nom existe déjà.
+   * Crée un nouveau logement dans la base de données.
    */
   async createUnit(data: CreateUnitInput): Promise<Unit> {
-    if (!data.property_id || !data.name || !data.type || data.capacity === undefined) {
-      throw new Error('Tous les champs (propriété, nom, type, capacité) sont obligatoires');
-    }
-
-    if (data.capacity <= 0) {
-      throw new Error('La capacité doit être un nombre supérieur à zéro');
-    }
-
-    // Contrôle d'unicité du nom au sein de la même propriété
-    const duplicate = await this.repository.findDuplicateByName(data.property_id, data.name);
-    if (duplicate) {
-      throw new Error(`Un logement nommé "${data.name}" existe déjà dans cette propriété.`);
-    }
-
-    return this.repository.create(data);
+    return await this.repository.create(data);
   }
 
   /**
-   * @method updateUnit
-   * @description Met à jour un logement existant avec contrôle d'unicité du nom.
-   * @param {string} id - Identifiant du logement.
-   * @param {UpdateUnitInput} data - Champs à mettre à jour.
-   * @returns {Promise<Unit>} Le logement mis à jour.
-   * @throws {Error} Si le logement est introuvable ou si le nouveau nom crée un doublon.
+   * Met à jour un logement existant.
    */
   async updateUnit(id: string, data: UpdateUnitInput): Promise<Unit> {
-    const existing = await this.repository.findById(id);
-    if (!existing) {
-      throw new Error('Logement non trouvé');
+    await this.getUnitById(id); // Vérifie que le logement existe
+    const updatedUnit = await this.repository.update(id, data);
+    
+    if (!updatedUnit) {
+      throw new Error(`Échec de la mise à jour du logement ${id}.`);
     }
 
-    if (data.capacity !== undefined && data.capacity <= 0) {
-      throw new Error('La capacité doit être un nombre supérieur à zéro');
-    }
-
-    // Si le nom est modifié, on vérifie l'unicité dans la même propriété
-    const nameToCheck = data.name || existing.name;
-    const duplicate = await this.repository.findDuplicateByName(existing.property_id, nameToCheck, id);
-    if (duplicate) {
-      throw new Error(`Un logement nommé "${nameToCheck}" existe déjà dans cette propriété.`);
-    }
-
-    const updated = await this.repository.update(id, data);
-    if (!updated) {
-      throw new Error('Erreur lors de la mise à jour du logement');
-    }
-
-    return updated;
+    return updatedUnit;
   }
 
   /**
-   * @method deleteUnit
-   * @description Supprime un logement par son identifiant.
-   * @param {string} id - Identifiant du logement à supprimer.
-   * @returns {Promise<void>}
-   * @throws {Error} Si le logement n'existe pas ou est déjà supprimé.
+   * Supprime un logement par son identifiant.
    */
   async deleteUnit(id: string): Promise<void> {
-    const deleted = await this.repository.delete(id);
-    if (!deleted) {
-      throw new Error('Logement non trouvé ou déjà supprimé');
-    }
+    await this.getUnitById(id);
+    await this.repository.delete(id);
   }
 }

@@ -1,44 +1,31 @@
-/**
- * @file unit.types.ts
- * @description Interfaces et DTOs pour la gestion des logements/chambres (Units).
- */
-
-/**
- * Représente un logement (Unit) en base de données.
- */
 export interface Unit {
-  /** Identifiant unique (UUID) */
   id: string;
-  /** Identifiant de la propriété rattachée */
   property_id: string;
-  /** Nom du logement (ex: "Chambre 101", "Appartement A") */
+  unit_number: string;
   name: string;
-  /** Type de logement (ex: "Chambre", "Appartement", "Studio") */
   type: string;
-  /** Capacité maximale d'occupants */
-  capacity: number;
-  /** Statut d'activation dans le système */
+  capacity?: number;
+  floor: number | null;
+  surface: number | null;
+  rent_amount: number | null;
+  charges_amount: number | null;
+  is_occupied: boolean;
   is_active: boolean;
-  /** Date de création */
-  created_at: Date | string;
+  created_at: Date;
 }
 
-/**
- * Structure des données requises pour créer un logement.
- */
 export interface CreateUnitInput {
   property_id: string;
+  unit_number: string;
   name: string;
   type: string;
-  capacity: number;
-}
-
-/**
- * Structure des données partielles pour modifier un logement.
- */
-export interface UpdateUnitInput {
-  name?: string;
-  type?: string;
   capacity?: number;
+  floor?: number;
+  surface?: number;
+  rent_amount?: number;
+  charges_amount?: number;
+  is_occupied?: boolean;
   is_active?: boolean;
 }
+
+export type UpdateUnitInput = Partial<CreateUnitInput>;
