@@ -1,0 +1,26 @@
+<div class="modal-overlay" (click)="onOverlayClick()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- EN-TÊTE -->
+    <header class="modal-header">
+      <div class="header-titles">
+        <h3 class="modal-title">{{ title }}</h3>
+        @if (subtitle) {
+          <p class="modal-subtitle">{{ subtitle }}</p>
+        }
+      </div>
+      <button type="button" class="close-btn" (click)="onClose()" aria-label="Fermer">&times;</button>
+    </header>
+
+    <!-- CORPS DE LA MODALE (DEFILEMENT ISOLE) -->
+    <div class="modal-body">
+      <ng-content select="[modal-body]"></ng-content>
+    </div>
+
+    <!-- PIED DE MODALE (BOUTONS D'ACTION) -->
+    <footer class="modal-footer">
+      <ng-content select="[modal-footer]"></ng-content>
+    </footer>
+
+  </div>
+</div>

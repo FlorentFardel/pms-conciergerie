@@ -1,208 +1,122 @@
-<!-- ========================================================================= -->
-<!-- CONTENEUR PRINCIPAL DU DÉTAIL D'UN LOGEMENT                               -->
-<!-- ========================================================================= -->
 <div class="unit-detail-container">
 
-  <!-- Affichage de l'état de chargement asynchrone -->
+  <!-- BANDEAU DE CHARGEMENT -->
   @if (loading()) {
-    <div class="loading-state">
-      <p>Chargement du logement...</p>
+    <div class="state-banner loading">
+      <span class="spinner"></span>
+      <p>Chargement des informations du logement...</p>
     </div>
-  } 
-  
-  <!-- Affichage d'un message d'erreur si l'API échoue -->
-  @else if (error()) {
-    <div class="alert alert-danger" role="alert">
-      {{ error() }}
-    </div>
-  } 
-  
-  <!-- Affichage principal du logement lorsque les données sont chargées -->
-  @else if (unit()) {
-    @let u = unit()!;
+  }
 
-    <!-- En-tête principal avec bouton de retour réaligné vers les logements -->
+  <!-- BANDEAU D'ERREUR -->
+  @if (error() && !loading()) {
+    <div class="state-banner error">
+      <p>{{ error() }}</p>
+      <button type="button" class="btn btn-secondary" (click)="loadUnit()">Réessayer</button>
+    </div>
+  }
+
+  @if (unit() && !loading()) {
+    
+    <!-- EN-TÊTE DU DETAIL -->
     <header class="detail-header">
-      <button 
-        type="button" 
-        class="btn-primary btn-back" 
-        (click)="goBack()"
-        aria-label="Retourner à la liste des logements"
-      >
-        &larr; Retour aux logements
+      <button type="button" class="btn btn-primary" (click)="goBack()">
+        ← Retour aux logements
       </button>
 
-      <div class="header-title">
-        <h2>
-          {{ u.unit_number }} 
-          @if (u.name) {
-            <span class="unit-name">({{ u.name }})</span>
-          }
-          <span class="badge">{{ u.type || 'Logement' }}</span>
-        </h2>
+      <div class="title-row">
+        <h2>{{ unit()?.unit_number }}</h2>
+        <span class="type-badge">{{ unit()?.type }}</span>
       </div>
     </header>
 
-    <!-- Navigation par Onglets Métiers -->
-    <nav class="tabs-nav" aria-label="Onglets de détails du logement">
-      <button 
-        type="button"
-        class="tab-item" 
-        [class.active]="activeTab() === 'overview'" 
-        (click)="setTab('overview')"
-      >
-        Général
-      </button>
-
-      <button 
-        type="button"
-        class="tab-item" 
-        [class.active]="activeTab() === 'sync'" 
-        (click)="setTab('sync')"
-      >
-        Airbnb / Booking
-      </button>
-
-      <button 
-        type="button"
-        class="tab-item" 
-        [class.active]="activeTab() === 'checklists'" 
-        (click)="setTab('checklists')"
-      >
-        Checklists
-      </button>
-
-      <button 
-        type="button"
-        class="tab-item" 
-        [class.active]="activeTab() === 'billing'" 
-        (click)="setTab('billing')"
-      >
-        Facturation
-      </button>
-
-      <button 
-        type="button"
-        class="tab-item" 
-        [class.active]="activeTab() === 'welcome'" 
-        (click)="setTab('welcome')"
-      >
-        Livret d'accueil
-      </button>
+    <!-- NAVIGATION PAR ONGLETS MÉTIERS -->
+    <nav class="tabs-header" aria-label="Sections du logement">
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">Général</button>
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'sync'" (click)="setTab('sync')">Airbnb / Booking</button>
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'checklists'" (click)="setTab('checklists')">Checklists</button>
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'billing'" (click)="setTab('billing')">Facturation</button>
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'welcome'" (click)="setTab('welcome')">Livret d'accueil</button>
     </nav>
 
-    <!-- Zone d'affichage dynamique du contenu des onglets -->
+    <!-- CONTENU DE L'ONGLET SÉLECTIONNÉ -->
     <main class="tab-content">
-      @switch (activeTab()) {
-        
-        <!-- Onglet 1: Synthèse générale & Caractéristiques du logement -->
-        @case ('overview') {
-          <section class="overview-section">
-            <div class="overview-header">
-              <h3>Informations Générales</h3>
-              <button 
-                type="button" 
-                class="btn-primary" 
-                (click)="openEditModal()"
-              >
-                Éditer le logement
-              </button>
-            </div>
 
-            <!-- Grille de restitution des caractéristiques du logement -->
-            <div class="info-grid">
-              <div class="info-card">
-                <span class="label">Numéro / Réf.</span>
-                <span class="value">{{ u.unit_number }}</span>
-              </div>
+      <!-- ONGLET 1 : INFORMATIONS GÉNÉRALES -->
+      @if (activeTab() === 'overview') {
+        <app-ui-card title="Informations Générales">
+          
+          <!-- BOUTON DE HEADER DANS L'SLOT DÉDIÉ -->
+          <button card-actions type="button" class="btn btn-primary" (click)="openEditModal()">
+            Éditer le logement
+          </button>
 
-              <div class="info-card">
-                <span class="label">Nom personnalisé</span>
-                <span class="value">{{ u.name || 'Non renseigné' }}</span>
-              </div>
+         <div class="info-list">
+  <app-ui-info-row label="NUMÉRO / RÉF.">{{ unit()?.unit_number }}</app-ui-info-row>
+  <app-ui-info-row label="NOM PERSONNALISÉ">{{ unit()?.name || 'Non renseigné' }}</app-ui-info-row>
+  <app-ui-info-row label="TYPE DE BIEN">{{ unit()?.type }}</app-ui-info-row>
+  <app-ui-info-row label="CAPACITÉ">{{ unit()?.capacity }} personne(s)</app-ui-info-row>
+  <app-ui-info-row label="ÉTAGE">{{ unit()?.floor ?? 'Non renseigné' }}</app-ui-info-row>
+  <app-ui-info-row label="SUPERFICIE">{{ (unit()?.surface ?? 0) | number:'1.2-2' }} m²</app-ui-info-row>
+  
+  <!-- Loyer sécurisé -->
+  <app-ui-info-row label="LOYER (HORS CHARGES)">
+    {{ (unit()?.rent_amount ?? 0) | number:'1.2-2' }} €
+  </app-ui-info-row>
+  
+  <!-- Charges sécurisées -->
+  <app-ui-info-row label="CHARGES">
+    {{ (unit()?.charges_amount ?? 0) | number:'1.2-2' }} €
+  </app-ui-info-row>
 
-              <div class="info-card">
-                <span class="label">Type de bien</span>
-                <span class="value">{{ u.type || '-' }}</span>
-              </div>
+  <!-- Statut -->
+  <app-ui-info-row label="STATUT D'ACTIVATION">
+    <span class="status-pill" [class.active]="unit()?.is_active">
+      {{ unit()?.is_active ? 'Actif' : 'Inactif' }}
+    </span>
+  </app-ui-info-row>
+</div>
 
-              <div class="info-card">
-                <span class="label">Capacité</span>
-                <span class="value">{{ u.capacity }} personne(s)</span>
-              </div>
-
-              <div class="info-card">
-                <span class="label">Étage</span>
-                <span class="value">{{ u.floor !== undefined && u.floor !== null ? (u.floor === 0 ? 'RDC' : u.floor) : '-' }}</span>
-              </div>
-
-              <div class="info-card">
-                <span class="label">Superficie</span>
-                <span class="value">{{ u.surface ? u.surface + ' m²' : '-' }}</span>
-              </div>
-
-              <div class="info-card">
-                <span class="label">Loyer (Hors Charges)</span>
-                <span class="value">{{ u.rent_amount ? u.rent_amount + ' €' : '-' }}</span>
-              </div>
-
-              <div class="info-card">
-                <span class="label">Charges</span>
-                <span class="value">{{ u.charges_amount !== undefined && u.charges_amount !== null ? u.charges_amount + ' €' : '-' }}</span>
-              </div>
-
-              <div class="info-card">
-                <span class="label">Statut d'activation</span>
-                <span class="value status-text" [class.active]="u.is_active">
-                  {{ u.is_active ? 'Actif' : 'Inactif' }}
-                </span>
-              </div>
-            </div>
-          </section>
-        }
-
-        <!-- Onglet 2: Synchronisation plateformes -->
-        @case ('sync') {
-          <div class="placeholder-tab">
-            <h4>Synchronisation plateformes (Airbnb, Booking)</h4>
-            <p>Prochainement disponible : configuration des API et de la propagation des annonces.</p>
-          </div>
-        }
-
-        <!-- Onglet 3: Checklists -->
-        @case ('checklists') {
-          <div class="placeholder-tab">
-            <h4>Checklists & Formulaires</h4>
-            <p>Prochainement disponible : formulaires de bienvenue, check-in et check-out.</p>
-          </div>
-        }
-
-        <!-- Onglet 4: Facturation -->
-        @case ('billing') {
-          <div class="placeholder-tab">
-            <h4>Facturation & Tarification</h4>
-            <p>Prochainement disponible : grilles tarifaires et règles de facturation.</p>
-          </div>
-        }
-
-        <!-- Onglet 5: Livret d'accueil -->
-        @case ('welcome') {
-          <div class="placeholder-tab">
-            <h4>Livret d'accueil</h4>
-            <p>Prochainement disponible : configuration du livret voyageur.</p>
-          </div>
-        }
+        </app-ui-card>
       }
+
+      <!-- ONGLETS SECONDAIRES -->
+      @if (activeTab() === 'sync') {
+        <app-ui-card title="Synchronisation des plateformes">
+          <p class="placeholder-text">Paramétrez ici la connexion avec vos comptes Airbnb et Booking.com.</p>
+        </app-ui-card>
+      }
+
+      @if (activeTab() === 'checklists') {
+        <app-ui-card title="Checklists Ménage & État des lieux">
+          <p class="placeholder-text">Gérez les tâches de préparation et d'inspection pour ce logement.</p>
+        </app-ui-card>
+      }
+
+      @if (activeTab() === 'billing') {
+        <app-ui-card title="Facturation & Quittances">
+          <p class="placeholder-text">Consultez l'historique des paiements et générez les documents comptables.</p>
+        </app-ui-card>
+      }
+
+      @if (activeTab() === 'welcome') {
+        <app-ui-card title="Livret d'accueil numérique">
+          <p class="placeholder-text">Rédigez les consignes, le code Wi-Fi et les instructions d'arrivée.</p>
+        </app-ui-card>
+      }
+
     </main>
 
-    <!-- Intégration de la modale de modification -->
-    @if (showModal()) {
+    <!-- MODALE D'ÉDITION -->
+    @if (showModal() && unit()) {
       <app-unit-modal
-        [propertyId]="u.property_id"
-        [unitToEdit]="u"
+        [propertyId]="unit()!.property_id"
+        [unitToEdit]="unit()"
         (closed)="onModalClosed(false)"
         (saved)="onModalClosed(true)"
       ></app-unit-modal>
     }
+
   }
+
 </div>

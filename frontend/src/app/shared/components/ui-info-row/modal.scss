@@ -1,0 +1,58 @@
+/**
+ * ============================================================================
+ * STYLES DU COMPOSANT UI-INFO-ROW (DESIGN SYSTEM)
+ * ============================================================================
+ */
+
+app-ui-info-row {
+  display: block;
+  width: 100%;
+}
+
+.ui-info-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.65rem 0.85rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  gap: 0.5rem;
+  box-sizing: border-box;
+
+  /* Style du libellé à gauche (Slate 700 à fort contraste) */
+  .info-label {
+    display: inline-block !important;
+    font-size: 0.725rem !important;
+    font-weight: 700 !important;
+    color: #334155 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    flex-shrink: 0;
+  }
+
+  /* Style de la valeur projetée */
+  .info-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #0f172a;
+    text-align: right;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 375px) {
+  .ui-info-row {
+    padding: 0.55rem 0.65rem;
+
+    .info-label {
+      font-size: 0.675rem !important;
+    }
+
+    .info-value {
+      font-size: 0.8rem;
+    }
+  }
+}

@@ -1,304 +1,118 @@
-:host {
-  display: block;
-}
-
-svg.icon {
-  display: inline-block;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-
-  &.icon-alert { width: 18px; height: 18px; stroke-width: 2; }
-  &.icon-close { width: 18px; height: 18px; stroke-width: 2; }
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-dialog {
-  background-color: #ffffff;
-  border-radius: 1rem;
-  width: 100%;
-  max-width: 520px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-
-  .modal-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: space-between;
-
-    h3 { margin: 0; font-size: 1.2rem; font-weight: 600; color: #0f172a; }
-    .modal-subtitle { margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #64748b; }
-    .close-btn { background: none; border: none; cursor: pointer; color: #64748b; padding: 0.25rem; }
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-
-    .modal-alert {
-      background-color: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .form-field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-
-      label { font-size: 0.85rem; font-weight: 600; color: #334155; }
-      input {
-        padding: 0.65rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 0.5rem;
-        outline: none;
-        font-size: 0.9rem;
-
-        &.has-error { border-color: #ef4444; background-color: #fff5f5; }
-      }
-    }
-
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  }
-
-  .modal-footer {
-    padding: 1rem 1.5rem;
-    background-color: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-  }
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  cursor: pointer;
-
-  &.btn-primary { background-color: #2563eb; color: #ffffff; }
-  &.btn-secondary { background-color: #ffffff; color: #334155; border-color: #cbd5e1; }
-}
-
-@media (max-width: 640px) {
-  .modal-dialog .modal-body .form-grid {
-    grid-template-columns: 1fr;
-  }
-}/**
- * ============================================================================
- * MODULE PROPERTIES - COMPOSANT MODALE (PROPERTIES-MODAL)
- * ============================================================================
- * Styles dédiés à l'affichage du dialogue modale autonome (Overlay, Formulaire,
- * Champs de saisie, Alertes et Boutons d'action).
+/**
+ * STYLES DU FORMULAIRE D'ÉDITION/CRÉATION DE PROPRIÉTÉ
  */
 
-:host {
-  display: block;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 1. STYLES DES ICÔNES SVG INTERNES À LA MODALE                              */
-/* -------------------------------------------------------------------------- */
-svg.icon {
-  display: inline-block;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-
-  /* Icône d'alerte pour les messages d'erreur */
-  &.icon-alert { 
-    width: 18px; 
-    height: 18px; 
-    stroke-width: 2; 
-  }
-
-  /* Icône de fermeture de la modale (Croix) */
-  &.icon-close { 
-    width: 18px; 
-    height: 18px; 
-    stroke-width: 2; 
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 2. OVERLAY & FENÊTRE DIALOGUE                                             */
-/* -------------------------------------------------------------------------- */
-/* Fond assombri et flouté couvrant tout l'écran */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
+/* Alerte d'erreur */
+.modal-alert {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
 
-/* Boîte de dialogue principale */
-.modal-dialog {
-  background-color: #ffffff;
-  border-radius: 1rem;
-  width: 100%;
-  max-width: 520px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-
-  /* En-tête de la modale (Titre + Bouton fermer) */
-  .modal-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: space-between;
-
-    h3 { 
-      margin: 0; 
-      font-size: 1.2rem; 
-      font-weight: 600; 
-      color: #0f172a; 
-    }
-
-    .modal-subtitle { 
-      margin: 0.25rem 0 0 0; 
-      font-size: 0.85rem; 
-      color: #64748b; 
-    }
-
-    .close-btn { 
-      background: none; 
-      border: none; 
-      cursor: pointer; 
-      color: #64748b; 
-      padding: 0.25rem; 
-    }
-  }
-
-  /* Corps de la modale (Formulaire et champs) */
-  .modal-body {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-
-    /* Bannière d'erreur en cas de validation échouée (ex: doublon) */
-    .modal-alert {
-      background-color: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    /* Champ de formulaire individuel */
-    .form-field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-
-      label { 
-        font-size: 0.85rem; 
-        font-weight: 600; 
-        color: #334155; 
-      }
-
-      input {
-        padding: 0.65rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 0.5rem;
-        outline: none;
-        font-size: 0.9rem;
-
-        /* Style d'erreur sur l'input */
-        &.has-error { 
-          border-color: #ef4444; 
-          background-color: #fff5f5; 
-        }
-      }
-    }
-
-    /* Grille côte-à-côte pour Code Postal et Ville */
-    .form-grid { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 1rem; 
-    }
-  }
-
-  /* Pied de la modale (Boutons d'action) */
-  .modal-footer {
-    padding: 1rem 1.5rem;
-    background-color: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
+  .icon-alert {
+    width: 1.125rem;
+    height: 1.125rem;
+    stroke: #dc2626;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* 3. BUTTONS ET ADAPTATION MOBILE                                            */
-/* -------------------------------------------------------------------------- */
+/* Alignement vertical des champs */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #334155; /* Slate 700 */
+  }
+
+  input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1; /* Slate 300 */
+    border-radius: 0.5rem;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    &.has-error {
+      border-color: #ef4444;
+    }
+  }
+}
+
+/* Grille pour Code Postal / Ville */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Styles des boutons dans le footer */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   border-radius: 0.5rem;
-  border: 1px solid transparent;
   cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
 
-  &.btn-primary { 
-    background-color: #2563eb; 
-    color: #ffffff; 
+  &.btn-secondary {
+    background-color: #ffffff;
+    color: #334155;
+    border-color: #cbd5e1;
+
+    &:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
   }
 
-  &.btn-secondary { 
-    background-color: #ffffff; 
-    color: #334155; 
-    border-color: #cbd5e1; 
-  }
-}
+  &.btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
 
-/* Format mobile (<= 640px) : La grille Code Postal/Ville passe sur une seule colonne */
-@media (max-width: 640px) {
-  .modal-dialog .modal-body .form-grid {
-    grid-template-columns: 1fr;
+    &:hover {
+      background-color: #1d4ed8;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }

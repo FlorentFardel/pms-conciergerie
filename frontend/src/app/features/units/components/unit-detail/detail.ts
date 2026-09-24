@@ -3,28 +3,24 @@ import { CommonModule } from '@angular/common';
 import { UnitService } from '../../services/unit';
 import { Unit } from '../../models/unit';
 import { UnitModalComponent } from '../unit-modal/modal';
-
+import { UiCardComponent } from '../../../../shared/components/ui-card';
+import { UiInfoRowComponent } from '../../../../shared/components/ui-info-row';
 /**
  * @component UnitDetailComponent
- * @description Composant gérant l'affichage détaillé d'un logement et sa navigation par onglets métiers.
+ * @description Composant gérant l'affichage détaillé d'un logement via les composants partagés UI.
  */
 @Component({
   selector: 'app-unit-detail',
   standalone: true,
-  imports: [CommonModule, UnitModalComponent],
+  imports: [CommonModule, UnitModalComponent, UiCardComponent, UiInfoRowComponent],
   templateUrl: './detail.html',
   styleUrl: './detail.scss'
 })
 export class UnitDetailComponent implements OnInit {
   private readonly unitService: UnitService = inject(UnitService);
 
-  /** Identifiant unique du logement à consulter */
   @Input({ required: true }) unitId!: string;
-
-  /** Événement émis pour revenir à la vue précédente */
   @Output() back: EventEmitter<void> = new EventEmitter<void>();
-
-  /** Événement émis lorsque des modifications sont enregistrées */
   @Output() saved: EventEmitter<void> = new EventEmitter<void>();
 
   readonly unit: WritableSignal<Unit | null> = signal<Unit | null>(null);

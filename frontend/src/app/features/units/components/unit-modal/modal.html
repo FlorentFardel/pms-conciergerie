@@ -1,108 +1,100 @@
-<div class="modal-overlay" (click)="onClose()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
-    
-    <header class="modal-header">
-      <h3>{{ unitToEdit ? 'Éditer le logement' : 'Nouveau logement' }}</h3>
-      <button type="button" class="close-btn" (click)="onClose()" aria-label="Fermer">&times;</button>
-    </header>
+<app-ui-modal
+  [title]="unitToEdit ? 'Éditer le logement' : 'Nouveau logement'"
+  (close)="onClose()"
+>
+  <!-- CORPS DE LA MODALE : FORMULAIRE DE SAISIE -->
+  <form modal-body id="unitForm" [formGroup]="form" (ngSubmit)="submit()">
+    @if (errorMessage()) {
+      <div class="alert-error">
+        {{ errorMessage() }}
+      </div>
+    }
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-form">
-      <div class="modal-body">
-        
-        @if (errorMessage()) {
-          <div class="alert-error">
-            {{ errorMessage() }}
-          </div>
+    <div class="form-grid">
+      <!-- Numéro de logement / Référence -->
+      <div class="form-group required">
+        <label for="unit_number">N° / Référence *</label>
+        <input 
+          id="unit_number" 
+          type="text" 
+          formControlName="unit_number" 
+          placeholder="ex: Apt 101, Ch. 2" 
+        />
+        @if (form.get('unit_number')?.touched && form.get('unit_number')?.invalid) {
+          <small class="field-error">
+            Ce champ est requis.
+          </small>
         }
-
-        <div class="form-grid">
-          <!-- Numéro de logement / Référence -->
-          <div class="form-group required">
-            <label for="unit_number">N° / Référence</label>
-            <input 
-              id="unit_number" 
-              type="text" 
-              formControlName="unit_number" 
-              placeholder="ex: Apt 101, Ch. 2" 
-            />
-            @if (form.get('unit_number')?.touched && form.get('unit_number')?.invalid) {
-              <small class="field-error">
-                Ce champ est requis.
-              </small>
-            }
-          </div>
-
-          <!-- Libellé / Nom -->
-          <div class="form-group">
-            <label for="name">Nom / Nom personnalisé</label>
-            <input 
-              id="name" 
-              type="text" 
-              formControlName="name" 
-              placeholder="ex: Le Cocon" 
-            />
-          </div>
-
-          <!-- Type -->
-          <div class="form-group required">
-            <label for="type">Type de bien</label>
-            <select id="type" formControlName="type">
-              <option value="Studio">Studio</option>
-              <option value="T1">T1</option>
-              <option value="T2">T2</option>
-              <option value="T3">T3</option>
-              <option value="Chambre">Chambre</option>
-              <option value="Duplex">Duplex</option>
-            </select>
-          </div>
-
-          <!-- Capacité -->
-          <div class="form-group required">
-            <label for="capacity">Capacité (pers.)</label>
-            <input id="capacity" type="number" formControlName="capacity" min="1" />
-          </div>
-
-          <!-- Étage -->
-          <div class="form-group">
-            <label for="floor">Étage</label>
-            <input id="floor" type="number" formControlName="floor" min="0" placeholder="ex: 2" />
-          </div>
-
-          <!-- Superficie -->
-          <div class="form-group">
-            <label for="surface">Superficie (m²)</label>
-            <input id="surface" type="number" formControlName="surface" step="0.1" min="0" placeholder="ex: 35.5" />
-          </div>
-
-          <!-- Loyer -->
-          <div class="form-group">
-            <label for="rent_amount">Loyer HC (€)</label>
-            <input id="rent_amount" type="number" formControlName="rent_amount" step="0.01" min="0" placeholder="ex: 550" />
-          </div>
-
-          <!-- Charges -->
-          <div class="form-group">
-            <label for="charges_amount">Charges (€)</label>
-            <input id="charges_amount" type="number" formControlName="charges_amount" step="0.01" min="0" placeholder="ex: 50" />
-          </div>
-        </div>
-
       </div>
 
-      <footer class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="onClose()" [disabled]="isSubmitting()">
-          Annuler
-        </button>
-        <button type="submit" class="btn btn-primary submit-btn" [disabled]="isSubmitting()">
-          <span [class.hidden]="isSubmitting()">
-            {{ unitToEdit ? 'Mettre à jour' : 'Créer le logement' }}
-          </span>
-          @if (isSubmitting()) {
-            <span class="spinner-sm"></span>
-          }
-        </button>
-      </footer>
-    </form>
+      <!-- Libellé / Nom -->
+      <div class="form-group">
+        <label for="name">Nom / Nom personnalisé</label>
+        <input 
+          id="name" 
+          type="text" 
+          formControlName="name" 
+          placeholder="ex: Le Cocon" 
+        />
+      </div>
 
-  </div>
-</div>
+      <!-- Type -->
+      <div class="form-group required">
+        <label for="type">Type de bien *</label>
+        <select id="type" formControlName="type">
+          <option value="Studio">Studio</option>
+          <option value="T1">T1</option>
+          <option value="T2">T2</option>
+          <option value="T3">T3</option>
+          <option value="Chambre">Chambre</option>
+          <option value="Duplex">Duplex</option>
+        </select>
+      </div>
+
+      <!-- Capacité -->
+      <div class="form-group required">
+        <label for="capacity">Capacité (pers.) *</label>
+        <input id="capacity" type="number" formControlName="capacity" min="1" />
+      </div>
+
+      <!-- Étage -->
+      <div class="form-group">
+        <label for="floor">Étage</label>
+        <input id="floor" type="number" formControlName="floor" min="0" placeholder="ex: 2" />
+      </div>
+
+      <!-- Superficie -->
+      <div class="form-group">
+        <label for="surface">Superficie (m²)</label>
+        <input id="surface" type="number" formControlName="surface" step="0.1" min="0" placeholder="ex: 35.5" />
+      </div>
+
+      <!-- Loyer -->
+      <div class="form-group">
+        <label for="rent_amount">Loyer HC (€)</label>
+        <input id="rent_amount" type="number" formControlName="rent_amount" step="0.01" min="0" placeholder="ex: 550" />
+      </div>
+
+      <!-- Charges -->
+      <div class="form-group">
+        <label for="charges_amount">Charges (€)</label>
+        <input id="charges_amount" type="number" formControlName="charges_amount" step="0.01" min="0" placeholder="ex: 50" />
+      </div>
+    </div>
+  </form>
+
+  <!-- PIED DE LA MODALE : BOUTONS D'ACTION (Lien avec le formulaire via form="unitForm") -->
+  <ng-container modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="onClose()" [disabled]="isSubmitting()">
+      Annuler
+    </button>
+    <button type="submit" form="unitForm" class="btn btn-primary submit-btn" [disabled]="isSubmitting()">
+      <span [class.hidden]="isSubmitting()">
+        {{ unitToEdit ? 'Mettre à jour' : 'Créer le logement' }}
+      </span>
+      @if (isSubmitting()) {
+        <span class="spinner-sm"></span>
+      }
+    </button>
+  </ng-container>
+</app-ui-modal>

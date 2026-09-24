@@ -3,15 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UnitService } from '../../services/unit';
 import { Unit, CreateUnitDto } from '../../models/unit';
+import { UiModalComponent } from '../../../../shared/components/ui-modal';
 
 /**
  * @component UnitModalComponent
- * @description Modale de création / édition de logement avec validation et émission d'événements.
+ * @description Modale de création et d'édition de logement s'appuyant sur UiModalComponent.
  */
 @Component({
   selector: 'app-unit-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, UiModalComponent],
   templateUrl: './modal.html',
   styleUrl: './modal.scss'
 })
@@ -92,7 +93,6 @@ export class UnitModalComponent implements OnInit {
         await this.unitService.createUnit(payload);
       }
 
-      // Émet la réussite pour que le parent recharge ET ferme la modale
       this.saved.emit();
       this.closed.emit();
     } catch (err: unknown) {

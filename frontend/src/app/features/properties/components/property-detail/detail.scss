@@ -16,6 +16,7 @@ $color-border: #e2e8f0;
   max-width: 1240px;
   margin: 0 auto;
   padding: 1.5rem 1rem;
+  box-sizing: border-box;
 
   .detail-header {
     margin-bottom: 2rem;
@@ -45,6 +46,8 @@ $color-border: #e2e8f0;
     }
 
     .header-titles {
+      width: 100%;
+
       h2 {
         margin: 0;
         font-size: 1.75rem;
@@ -61,6 +64,11 @@ $color-border: #e2e8f0;
     }
   }
 
+  .units-section {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .loading-state {
     text-align: center;
     padding: 3rem;
@@ -73,5 +81,35 @@ $color-border: #e2e8f0;
     color: #991b1b;
     padding: 1rem;
     border-radius: 8px;
+  }
+}
+
+// =============================================================================
+// AJUSTEMENT MOBILE (< 640px) : CENTRAGE PARFAIT & MARGES
+// =============================================================================
+@media (max-width: 640px) {
+  .property-detail-container {
+    padding: 1rem;
+
+    .detail-header {
+      align-items: center;
+      text-align: center;
+      margin-bottom: 1.5rem;
+
+      .btn-primary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .header-titles {
+        h2 {
+          font-size: 1.5rem;
+        }
+
+        .subtitle {
+          font-size: 0.875rem;
+        }
+      }
+    }
   }
 }

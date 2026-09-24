@@ -1,102 +1,77 @@
-<!-- OVERLAY DE LA MODALE (Ferme au clic extérieur) -->
-<div class="modal-overlay" (click)="onClose()">
-  <!-- CONTENEUR DU DIALOGUE (Empêche la fermeture au clic intérieur) -->
-  <div class="modal-dialog" (click)="$event.stopPropagation()">
-    
-    <!-- EN-TÊTE DE LA MODALE -->
-    <header class="modal-header">
-      <div>
-        <h3>{{ propertyToEdit ? 'Modifier la Propriété' : 'Nouvelle Propriété' }}</h3>
-        <p class="modal-subtitle">
-          {{ propertyToEdit ? 'Ajustez les informations du bâtiment.' : 'Renseignez les coordonnées du bâtiment.' }}
-        </p>
-      </div>
-      <!-- Bouton Croix pour fermer -->
-      <button class="close-btn" type="button" (click)="onClose()">
-        <svg class="icon icon-close" viewBox="0 0 24 24">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
+<app-ui-modal 
+  [title]="propertyToEdit ? 'Modifier la Propriété' : 'Nouvelle Propriété'"
+  [subtitle]="propertyToEdit ? 'Ajustez les informations du bâtiment.' : 'Renseignez les coordonnées du bâtiment.'"
+  (close)="onClose()"
+>
+  <!-- FORMULAIRE (Injecté dans modal-body) -->
+  <form modal-body id="propertyForm" (ngSubmit)="onSubmit()">
+    @if (errorMessage) {
+      <div class="modal-alert">
+        <svg class="icon icon-alert" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
-      </button>
-    </header>
-
-    <!-- FORMULAIRE DE SAISIE -->
-    <form (ngSubmit)="onSubmit()">
-      <div class="modal-body">
-        
-        <!-- BANNIÈRE D'ERREUR (ex: Doublon de nom de propriété) -->
-        @if (errorMessage) {
-          <div class="modal-alert">
-            <svg class="icon icon-alert" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <span>{{ errorMessage }}</span>
-          </div>
-        }
-
-        <!-- Champ : Nom du bâtiment -->
-        <div class="form-field">
-          <label for="name">Nom du bâtiment *</label>
-          <input 
-            id="name"
-            type="text" 
-            [(ngModel)]="formData.name" 
-            name="name" 
-            [class.has-error]="errorMessage" 
-            placeholder="Ex: Résidence Les Jardins" 
-            required 
-          />
-        </div>
-
-        <!-- Champ : Adresse postale -->
-        <div class="form-field">
-          <label for="address">Adresse postale *</label>
-          <input 
-            id="address"
-            type="text" 
-            [(ngModel)]="formData.address" 
-            name="address" 
-            placeholder="Ex: 142 Boulevard Haussmann" 
-            required 
-          />
-        </div>
-
-        <!-- Champs alignés : Code Postal et Ville -->
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="postal_code">Code Postal *</label>
-            <input 
-              id="postal_code"
-              type="text" 
-              [(ngModel)]="formData.postal_code" 
-              name="postal_code" 
-              placeholder="75008" 
-              required 
-            />
-          </div>
-          <div class="form-field">
-            <label for="city">Ville *</label>
-            <input 
-              id="city"
-              type="text" 
-              [(ngModel)]="formData.city" 
-              name="city" 
-              placeholder="Paris" 
-              required 
-            />
-          </div>
-        </div>
+        <span>{{ errorMessage }}</span>
       </div>
+    }
 
-      <!-- PIED DE LA MODALE (Boutons Annuler et Validation) -->
-      <footer class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Annuler</button>
-        <button type="submit" class="btn btn-primary">
-          {{ propertyToEdit ? 'Mettre à jour' : 'Enregistrer la propriété' }}
-        </button>
-      </footer>
-    </form>
-  </div>
-</div>
+    <div class="form-field">
+      <label for="name">Nom du bâtiment *</label>
+      <input 
+        id="name"
+        type="text" 
+        [(ngModel)]="formData.name" 
+        name="name" 
+        [class.has-error]="errorMessage" 
+        placeholder="Ex: Résidence Les Jardins" 
+        required 
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="address">Adresse postale *</label>
+      <input 
+        id="address"
+        type="text" 
+        [(ngModel)]="formData.address" 
+        name="address" 
+        placeholder="Ex: 142 Boulevard Haussmann" 
+        required 
+      />
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="postal_code">Code Postal *</label>
+        <input 
+          id="postal_code"
+          type="text" 
+          [(ngModel)]="formData.postal_code" 
+          name="postal_code" 
+          placeholder="75008" 
+          required 
+        />
+      </div>
+      <div class="form-field">
+        <label for="city">Ville *</label>
+        <input 
+          id="city"
+          type="text" 
+          [(ngModel)]="formData.city" 
+          name="city" 
+          placeholder="Paris" 
+          required 
+        />
+      </div>
+    </div>
+  </form>
+
+  <!-- BOUTONS D'ACTION (Injectés dans modal-footer) -->
+  <ng-container modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="onClose()">Annuler</button>
+    <button type="submit" form="propertyForm" class="btn btn-primary">
+      {{ propertyToEdit ? 'Mettre à jour' : 'Enregistrer la propriété' }}
+    </button>
+  </ng-container>
+</app-ui-modal>

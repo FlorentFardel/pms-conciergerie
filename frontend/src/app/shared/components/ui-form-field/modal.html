@@ -1,0 +1,11 @@
+<div class="ui-form-field">
+  <label class="field-label">
+    {{ label }}
+    <span *ngIf="required" class="required-asterisk">*</span>
+  </label>
+  
+  <!-- Projection de l'input métier -->
+  <div class="field-control">
+    <ng-content></ng-content>
+  </div>
+</div>

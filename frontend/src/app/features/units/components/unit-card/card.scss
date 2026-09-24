@@ -37,6 +37,7 @@ $color-error-text: #991b1b;
   box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease-in-out;
+  margin: 0 auto;
 
   &:hover {
     border-color: #cbd5e1;
@@ -106,7 +107,7 @@ $color-error-text: #991b1b;
     }
   }
 
-  // Grille des 5 caractéristiques sur une seule ligne
+  // Grille des 5 caractéristiques
   .card-body {
     width: 100%;
 
@@ -126,7 +127,7 @@ $color-error-text: #991b1b;
         align-items: center;
         justify-content: center;
         text-align: center;
-        min-width: 0; /* Empêche le débordement de texte */
+        min-width: 0;
 
         .metric-label {
           font-family: $font-family-sans;
@@ -160,7 +161,7 @@ $color-error-text: #991b1b;
     .btn-manage {
       background: none;
       border: none;
-      padding: 0.35rem 0.6rem;
+      padding: 0.5rem 1rem;
       font-family: $font-family-sans;
       font-size: 0.9rem;
       font-weight: 600;
@@ -176,12 +177,45 @@ $color-error-text: #991b1b;
   }
 }
 
-// Adaptation petits écrans mobiles
+// =============================================================================
+// ADAPTATION MOBILE ET CENTRAGE
+// =============================================================================
 @media (max-width: 640px) {
   .unit-card {
+    padding: 1rem;
+
+    .card-header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+
+      .title-wrapper {
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+    }
+
     .card-body {
       .metrics-grid {
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+
+        .metric-item {
+          flex: 1 1 calc(33.333% - 0.5rem);
+          min-width: 90px;
+          max-width: 120px;
+        }
+      }
+    }
+
+    .card-footer {
+      justify-content: center;
+
+      .btn-manage {
+        width: 100%;
+        text-align: center;
       }
     }
   }
