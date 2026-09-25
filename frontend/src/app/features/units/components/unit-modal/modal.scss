@@ -1,117 +1,29 @@
-/* ==========================================================================
-   COMPOSANT : UnitModalComponent (Styles Métier Spécifiques)
-   ========================================================================== */
+/**
+ * STYLES DE DISPOSITION - FORMULAIRE UNIT MODAL
+ */
 
-/* Keyframe d'animation pour le spinner du bouton lors de la soumission */
-@keyframes btnSpin {
-  to { 
-    transform: rotate(360deg); 
-  }
-}
-
-:host {
-  display: block;
-}
-
-/* --------------------------------------------------------------------------
-   1. BANNERE D'ERREUR ET GRILLE DE FORMULAIRE
-   -------------------------------------------------------------------------- */
-.alert-error {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  margin-bottom: 1.25rem;
-}
-
-/* Disposition des champs sur 2 colonnes par défaut sur écran PC */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.unit-form {
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
 }
 
-/* Regroupement label + input/select */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 
-  label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #334155;
-  }
-
-  input, select {
-    width: 100%;
-    padding: 0.625rem 0.875rem;
-    font-size: 0.95rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    background-color: #ffffff;
-    color: #0f172a;
-    box-sizing: border-box;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-    &:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    &::placeholder {
-      color: #94a3b8;
-    }
-  }
-
-  /* Message d'erreur sous un champ de saisie */
-  .field-error {
-    color: #dc2626;
-    font-size: 0.75rem;
-    margin-top: 0.125rem;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   2. SPINNER ET ETATS DE SOUMISSION DU BOUTON
-   -------------------------------------------------------------------------- */
-.submit-btn {
-  min-width: 145px;
-  position: relative;
-
-  /* Masque le texte sans déformer les dimensions du bouton */
-  .hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  /* Spinner circulaire centré dans le bouton */
-  .spinner-sm {
-    position: absolute;
-    width: 1.125rem;
-    height: 1.125rem;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: btnSpin 0.6s linear infinite;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   3. ADAPTATIONS RESPONSIVES
-   -------------------------------------------------------------------------- */
-@media (max-width: 640px) {
-  .form-grid {
+  @media (max-width: 520px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
 }
 
-@media (max-width: 480px) {
-  .submit-btn {
-    min-width: unset;
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
   }
 }

@@ -18,22 +18,23 @@
       <h2>Logements ({{ units().length }})</h2>
       
       <div class="actions-bar">
-        <!-- Toggle Global -->
+        <!-- Toggle Global avec app-ui-button -->
         @if (units().length > 0) {
-          <button 
-            type="button" 
-            class="btn-toggle-global" 
-            [class.active]="areAllUnitsActive()"
-            (click)="toggleAllUnits()"
+          <app-ui-button 
+            [variant]="areAllUnitsActive() ? 'danger' : 'secondary'"
+            (clicked)="toggleAllUnits()"
           >
             {{ areAllUnitsActive() ? 'Tout désactiver' : 'Tout activer' }}
-          </button>
+          </app-ui-button>
         }
 
-        <!-- Bouton Ajouter -->
-        <button type="button" class="btn-primary" (click)="openCreateModal()">
+        <!-- Bouton Ajouter avec app-ui-button -->
+        <app-ui-button 
+          variant="primary" 
+          (clicked)="openCreateModal()"
+        >
           + Ajouter un logement
-        </button>
+        </app-ui-button>
       </div>
     </header>
 

@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Unit } from '../../models/unit';
-
+import { UiButtonComponent } from '../../../../shared';
 /**
  * @component UnitCardComponent
  * @description Composant d'affichage synthétique d'un logement sous forme de carte interactive.
@@ -9,7 +9,7 @@ import { Unit } from '../../models/unit';
 @Component({
   selector: 'app-unit-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, UiButtonComponent],
   templateUrl: './card.html',
   styleUrl: './card.scss'
 })

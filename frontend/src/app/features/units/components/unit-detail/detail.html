@@ -12,7 +12,9 @@
   @if (error() && !loading()) {
     <div class="state-banner error">
       <p>{{ error() }}</p>
-      <button type="button" class="btn btn-secondary" (click)="loadUnit()">Réessayer</button>
+      <app-ui-button variant="secondary" (clicked)="loadUnit()">
+        Réessayer
+      </app-ui-button>
     </div>
   }
 
@@ -20,9 +22,12 @@
     
     <!-- EN-TÊTE DU DETAIL -->
     <header class="detail-header">
-      <button type="button" class="btn btn-primary" (click)="goBack()">
-        ← Retour aux logements
-      </button>
+      <div class="header-actions">
+        <!-- variant="primary" pour le bouton bleu principal -->
+        <app-ui-button variant="primary" (clicked)="goBack()">
+          ← Retour aux logements
+        </app-ui-button>
+      </div>
 
       <div class="title-row">
         <h2>{{ unit()?.unit_number }}</h2>
@@ -46,41 +51,36 @@
       @if (activeTab() === 'overview') {
         <app-ui-card title="Informations Générales">
           
-          <!-- BOUTON DE HEADER DANS L'SLOT DÉDIÉ -->
-          <button card-actions type="button" class="btn btn-primary" (click)="openEditModal()">
+          <app-ui-button card-actions variant="primary" (clicked)="openEditModal()">
             Éditer le logement
-          </button>
+          </app-ui-button>
 
-         <div class="info-list">
-  <app-ui-info-row label="NUMÉRO / RÉF.">{{ unit()?.unit_number }}</app-ui-info-row>
-  <app-ui-info-row label="NOM PERSONNALISÉ">{{ unit()?.name || 'Non renseigné' }}</app-ui-info-row>
-  <app-ui-info-row label="TYPE DE BIEN">{{ unit()?.type }}</app-ui-info-row>
-  <app-ui-info-row label="CAPACITÉ">{{ unit()?.capacity }} personne(s)</app-ui-info-row>
-  <app-ui-info-row label="ÉTAGE">{{ unit()?.floor ?? 'Non renseigné' }}</app-ui-info-row>
-  <app-ui-info-row label="SUPERFICIE">{{ (unit()?.surface ?? 0) | number:'1.2-2' }} m²</app-ui-info-row>
-  
-  <!-- Loyer sécurisé -->
-  <app-ui-info-row label="LOYER (HORS CHARGES)">
-    {{ (unit()?.rent_amount ?? 0) | number:'1.2-2' }} €
-  </app-ui-info-row>
-  
-  <!-- Charges sécurisées -->
-  <app-ui-info-row label="CHARGES">
-    {{ (unit()?.charges_amount ?? 0) | number:'1.2-2' }} €
-  </app-ui-info-row>
+          <div class="info-list">
+            <app-ui-info-row label="NUMÉRO / RÉF.">{{ unit()?.unit_number }}</app-ui-info-row>
+            <app-ui-info-row label="NOM PERSONNALISÉ">{{ unit()?.name || 'Non renseigné' }}</app-ui-info-row>
+            <app-ui-info-row label="TYPE DE BIEN">{{ unit()?.type }}</app-ui-info-row>
+            <app-ui-info-row label="CAPACITÉ">{{ unit()?.capacity }} personne(s)</app-ui-info-row>
+            <app-ui-info-row label="ÉTAGE">{{ unit()?.floor ?? 'Non renseigné' }}</app-ui-info-row>
+            <app-ui-info-row label="SUPERFICIE">{{ (unit()?.surface ?? 0) | number:'1.2-2' }} m²</app-ui-info-row>
+            
+            <app-ui-info-row label="LOYER (HORS CHARGES)">
+              {{ (unit()?.rent_amount ?? 0) | number:'1.2-2' }} €
+            </app-ui-info-row>
+            
+            <app-ui-info-row label="CHARGES">
+              {{ (unit()?.charges_amount ?? 0) | number:'1.2-2' }} €
+            </app-ui-info-row>
 
-  <!-- Statut -->
-  <app-ui-info-row label="STATUT D'ACTIVATION">
-    <span class="status-pill" [class.active]="unit()?.is_active">
-      {{ unit()?.is_active ? 'Actif' : 'Inactif' }}
-    </span>
-  </app-ui-info-row>
-</div>
+            <app-ui-info-row label="STATUT D'ACTIVATION">
+              <span class="status-pill" [class.active]="unit()?.is_active">
+                {{ unit()?.is_active ? 'Actif' : 'Inactif' }}
+              </span>
+            </app-ui-info-row>
+          </div>
 
         </app-ui-card>
       }
 
-      <!-- ONGLETS SECONDAIRES -->
       @if (activeTab() === 'sync') {
         <app-ui-card title="Synchronisation des plateformes">
           <p class="placeholder-text">Paramétrez ici la connexion avec vos comptes Airbnb et Booking.com.</p>

@@ -14,16 +14,17 @@
   } @else if (property()) {
     @let prop = property()!;
     
-    <!-- En-tête avec bouton de retour bleu unifié -->
+    <!-- En-tête avec composant UI Button unifié -->
     <header class="detail-header">
-      <button 
-        type="button" 
-        class="btn-primary btn-back" 
-        (click)="goBack()"
-        aria-label="Retourner à la liste des propriétés"
-      >
-        &larr; Retour aux propriétés
-      </button>
+      <div class="header-actions">
+        <app-ui-button 
+          variant="primary" 
+          (clicked)="goBack()"
+          aria-label="Retourner à la liste des propriétés"
+        >
+          ← Retour aux propriétés
+        </app-ui-button>
+      </div>
 
       <div class="header-titles">
         <h2>{{ prop.name }}</h2>

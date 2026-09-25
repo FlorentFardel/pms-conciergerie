@@ -1,100 +1,115 @@
-<app-ui-modal
-  [title]="unitToEdit ? 'Éditer le logement' : 'Nouveau logement'"
+<app-ui-modal 
+  [title]="unitToEdit() ? 'Modifier le logement' : 'Nouveau logement'"
+  [subtitle]="unitToEdit() ? 'Ajustez les caractéristiques du lot.' : 'Renseignez les détails du nouveau lot.'"
   (close)="onClose()"
 >
-  <!-- CORPS DE LA MODALE : FORMULAIRE DE SAISIE -->
-  <form modal-body id="unitForm" [formGroup]="form" (ngSubmit)="submit()">
-    @if (errorMessage()) {
-      <div class="alert-error">
-        {{ errorMessage() }}
+  <!-- FORMULAIRE (Injecté dans modal-body) -->
+  <form modal-body id="unitForm" (ngSubmit)="onSubmit()" class="unit-form">
+    
+    @if (errorMessage) {
+      <div class="modal-alert">
+        <span>{{ errorMessage }}</span>
       </div>
     }
 
-    <div class="form-grid">
-      <!-- Numéro de logement / Référence -->
-      <div class="form-group required">
-        <label for="unit_number">N° / Référence *</label>
+    <div class="form-grid-2">
+      <app-ui-form-field label="Numéro / Réf." [required]="true">
         <input 
-          id="unit_number" 
           type="text" 
-          formControlName="unit_number" 
-          placeholder="ex: Apt 101, Ch. 2" 
+          [(ngModel)]="formData.unit_number" 
+          name="unit_number" 
+          placeholder="Ex: Apt 102" 
+          required 
         />
-        @if (form.get('unit_number')?.touched && form.get('unit_number')?.invalid) {
-          <small class="field-error">
-            Ce champ est requis.
-          </small>
-        }
-      </div>
+      </app-ui-form-field>
 
-      <!-- Libellé / Nom -->
-      <div class="form-group">
-        <label for="name">Nom / Nom personnalisé</label>
+      <app-ui-form-field label="Nom personnalisé">
         <input 
-          id="name" 
           type="text" 
-          formControlName="name" 
-          placeholder="ex: Le Cocon" 
+          [(ngModel)]="formData.name" 
+          name="name" 
+          placeholder="Ex: Studio Vue Parc" 
         />
-      </div>
+      </app-ui-form-field>
+    </div>
 
-      <!-- Type -->
-      <div class="form-group required">
-        <label for="type">Type de bien *</label>
-        <select id="type" formControlName="type">
+    <div class="form-grid-3">
+      <app-ui-form-field label="Type de bien" [required]="true">
+        <select [(ngModel)]="formData.type" name="type">
           <option value="Studio">Studio</option>
           <option value="T1">T1</option>
           <option value="T2">T2</option>
           <option value="T3">T3</option>
-          <option value="Chambre">Chambre</option>
-          <option value="Duplex">Duplex</option>
+          <option value="T4">T4</option>
+          <option value="Maison">Maison</option>
         </select>
-      </div>
+      </app-ui-form-field>
 
-      <!-- Capacité -->
-      <div class="form-group required">
-        <label for="capacity">Capacité (pers.) *</label>
-        <input id="capacity" type="number" formControlName="capacity" min="1" />
-      </div>
+      <app-ui-form-field label="Capacité (pers.)" [required]="true">
+        <input 
+          type="number" 
+          [(ngModel)]="formData.capacity" 
+          name="capacity" 
+          min="1" 
+        />
+      </app-ui-form-field>
 
-      <!-- Étage -->
-      <div class="form-group">
-        <label for="floor">Étage</label>
-        <input id="floor" type="number" formControlName="floor" min="0" placeholder="ex: 2" />
-      </div>
-
-      <!-- Superficie -->
-      <div class="form-group">
-        <label for="surface">Superficie (m²)</label>
-        <input id="surface" type="number" formControlName="surface" step="0.1" min="0" placeholder="ex: 35.5" />
-      </div>
-
-      <!-- Loyer -->
-      <div class="form-group">
-        <label for="rent_amount">Loyer HC (€)</label>
-        <input id="rent_amount" type="number" formControlName="rent_amount" step="0.01" min="0" placeholder="ex: 550" />
-      </div>
-
-      <!-- Charges -->
-      <div class="form-group">
-        <label for="charges_amount">Charges (€)</label>
-        <input id="charges_amount" type="number" formControlName="charges_amount" step="0.01" min="0" placeholder="ex: 50" />
-      </div>
+      <app-ui-form-field label="Étage">
+        <input 
+          type="number" 
+          [(ngModel)]="formData.floor" 
+          name="floor" 
+          placeholder="0" 
+        />
+      </app-ui-form-field>
     </div>
+
+    <div class="form-grid-3">
+      <app-ui-form-field label="Superficie (m²)">
+        <input 
+          type="number" 
+          step="0.01" 
+          [(ngModel)]="formData.surface" 
+          name="surface" 
+          placeholder="25.50" 
+        />
+      </app-ui-form-field>
+
+      <app-ui-form-field label="Loyer HC (€)">
+        <input 
+          type="number" 
+          step="0.01" 
+          [(ngModel)]="formData.rent_amount" 
+          name="rent_amount" 
+          placeholder="550.00" 
+        />
+      </app-ui-form-field>
+
+      <app-ui-form-field label="Charges (€)">
+        <input 
+          type="number" 
+          step="0.01" 
+          [(ngModel)]="formData.charges_amount" 
+          name="charges_amount" 
+          placeholder="50.00" 
+        />
+      </app-ui-form-field>
+    </div>
+
   </form>
 
-  <!-- PIED DE LA MODALE : BOUTONS D'ACTION (Lien avec le formulaire via form="unitForm") -->
+  <!-- BOUTONS D'ACTION (Injectés dans modal-footer) -->
   <ng-container modal-footer>
-    <button type="button" class="btn btn-secondary" (click)="onClose()" [disabled]="isSubmitting()">
+    <app-ui-button variant="secondary" (clicked)="onClose()">
       Annuler
-    </button>
-    <button type="submit" form="unitForm" class="btn btn-primary submit-btn" [disabled]="isSubmitting()">
-      <span [class.hidden]="isSubmitting()">
-        {{ unitToEdit ? 'Mettre à jour' : 'Créer le logement' }}
-      </span>
-      @if (isSubmitting()) {
-        <span class="spinner-sm"></span>
-      }
-    </button>
+    </app-ui-button>
+    <app-ui-button 
+      type="submit" 
+      form="unitForm" 
+      variant="primary"
+      [loading]="isSubmitting"
+    >
+      {{ unitToEdit() ? 'Mettre à jour' : 'Enregistrer le logement' }}
+    </app-ui-button>
   </ng-container>
 </app-ui-modal>

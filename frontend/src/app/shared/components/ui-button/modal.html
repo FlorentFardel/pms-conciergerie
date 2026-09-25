@@ -1,0 +1,14 @@
+<button
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [attr.form]="form()"
+  class="btn btn-{{ variant() }} btn-{{ size() }}"
+  (click)="handleClick($event)"
+>
+  @if (loading()) {
+    <span class="btn-spinner" aria-hidden="true"></span>
+  }
+  <span [class.invisible]="loading()">
+    <ng-content></ng-content>
+  </span>
+</button>

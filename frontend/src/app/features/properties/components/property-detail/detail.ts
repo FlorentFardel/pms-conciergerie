@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PropertyService } from '../../services/property';
 import { Property } from '../../models/property';
 import { UnitsListComponent } from '../../../units/components/units-list/list';
-
+import { UiButtonComponent } from '../../../../shared/components/ui-button/modal'; // Ajuste le chemin selon ton arborescence
 /**
  * @component PropertyDetailComponent
  * @description Composant dédié à la consultation d'une propriété spécifique et à l'encapsulation de sa liste de logements.
@@ -11,7 +11,7 @@ import { UnitsListComponent } from '../../../units/components/units-list/list';
 @Component({
   selector: 'app-property-detail',
   standalone: true,
-  imports: [CommonModule, UnitsListComponent],
+  imports: [CommonModule, UnitsListComponent,UiButtonComponent],
   templateUrl: './detail.html',
   styleUrl: './detail.scss'
 })

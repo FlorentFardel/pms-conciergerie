@@ -75,15 +75,15 @@
     </div>
   </div>
 
-  <!-- Pied de carte : Action explicite de gestion -->
+  <!-- Pied de carte : Action explicite avec app-ui-button -->
   <footer class="card-footer">
-    <button 
-      type="button" 
-      class="btn-manage" 
-      (click)="onSelect($event)"
+    <app-ui-button 
+      variant="outline" 
+      size="sm"
+      (clicked)="onSelect($event)"
     >
       Gérer le logement &rarr;
-    </button>
+    </app-ui-button>
   </footer>
 
 </article>

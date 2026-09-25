@@ -1,0 +1,129 @@
+/**
+ * STYLES DU COMPOSANT UI-BUTTON
+ */
+
+:host {
+  display: inline-block !important;
+  width: fit-content !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  white-space: nowrap;
+  
+  /* Largeur minimale pour harmoniser tous les boutons d'action */
+  min-width: 11rem; 
+  width: auto;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+  }
+
+  /* --- TAILLES NORMALISÉES --- */
+
+  &.btn-sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1;
+    min-width: 8rem;
+  }
+
+  &.btn-md {
+    height: 2.375rem;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    min-width: 11rem;
+  }
+
+  &.btn-lg {
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    font-size: 1rem;
+    line-height: 1;
+    min-width: 13rem;
+  }
+
+  /* --- VARIANTES --- */
+
+  &.btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+
+    &:hover:not(:disabled) {
+      background-color: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+  }
+
+  &.btn-secondary {
+    background-color: #ffffff;
+    color: #334155;
+    border-color: #cbd5e1;
+
+    &:hover:not(:disabled) {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
+  }
+
+  &.btn-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+
+    &:hover:not(:disabled) {
+      background-color: #dc2626;
+      border-color: #dc2626;
+    }
+  }
+
+  &.btn-outline {
+    background-color: transparent;
+    color: #2563eb;
+    border-color: #2563eb;
+
+    &:hover:not(:disabled) {
+      background-color: #eff6ff;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-spinner {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  .invisible {
+    visibility: hidden;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

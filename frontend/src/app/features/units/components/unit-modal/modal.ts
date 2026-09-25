@@ -1,104 +1,110 @@
-import { Component, Input, Output, EventEmitter, OnInit, inject, signal } from '@angular/core';
+import { Component, input, output, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { UiModalComponent } from '../../../../shared/components/ui-modal/modal';
+import { UiFormFieldComponent } from '../../../../shared/components/ui-form-field/modal';
+import { UiButtonComponent } from '../../../../shared/components/ui-button/modal';
+import { Unit } from '../../models/unit';
 import { UnitService } from '../../services/unit';
-import { Unit, CreateUnitDto } from '../../models/unit';
-import { UiModalComponent } from '../../../../shared/components/ui-modal';
 
 /**
- * @component UnitModalComponent
- * @description Modale de création et d'édition de logement s'appuyant sur UiModalComponent.
+ * @file modal.ts
+ * @module Features/Units/Components/UnitModal
+ * @description Modale de création et d'édition d'un logement (Unit).
+ * Encapsule l'appel au service backend et communique via ngModel simple.
  */
 @Component({
   selector: 'app-unit-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UiModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    UiModalComponent,
+    UiFormFieldComponent,
+    UiButtonComponent
+  ],
   templateUrl: './modal.html',
-  styleUrl: './modal.scss'
+  styleUrl: './modal.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UnitModalComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
-  private readonly unitService = inject(UnitService);
+  private readonly unitService: UnitService = inject(UnitService);
 
-  @Input({ required: true }) propertyId!: string;
-  @Input() unitToEdit: Unit | null = null;
+  /** ID de la propriété parente */
+  readonly propertyId = input.required<string | number>();
 
-  /** Événement transmis au parent pour fermer la modale */
-  @Output() closed = new EventEmitter<void>();
+  /** Logement à modifier (undefined si création) */
+  readonly unitToEdit = input<Unit | null | undefined>(undefined);
 
-  /** Événement transmis au parent après enregistrement réussi */
-  @Output() saved = new EventEmitter<void>();
+  /** Événement émis à la fermeture */
+  readonly closed = output<void>();
 
-  form!: FormGroup;
-  readonly isSubmitting = signal<boolean>(false);
-  readonly errorMessage = signal<string | null>(null);
+  /** Événement émis après sauvegarde réussie */
+  readonly saved = output<void>();
+
+  /** Modèle de données simple pour [(ngModel)] */
+  formData: Partial<Unit> = {
+    unit_number: '',
+    name: '',
+    type: 'Studio',
+    capacity: 1,
+    floor: undefined,
+    surface: undefined,
+    rent_amount: undefined,
+    charges_amount: undefined
+  };
+
+  /** Indique si une requête réseau est en cours */
+  isSubmitting = false;
+
+  /** Message d'erreur éventuel */
+  errorMessage: string | null = null;
 
   ngOnInit(): void {
-    this.initForm();
+    const unit = this.unitToEdit();
+    if (unit) {
+      this.formData = { ...unit };
+    }
   }
 
-  private initForm(): void {
-    this.form = this.fb.group({
-      unit_number: [this.unitToEdit?.unit_number || '', [Validators.required]],
-      name: [this.unitToEdit?.name || ''],
-      type: [this.unitToEdit?.type || 'Studio', [Validators.required]],
-      capacity: [this.unitToEdit?.capacity || 1, [Validators.required, Validators.min(1)]],
-      floor: [this.unitToEdit?.floor ?? null],
-      surface: [this.unitToEdit?.surface ?? null],
-      rent_amount: [this.unitToEdit?.rent_amount ?? null],
-      charges_amount: [this.unitToEdit?.charges_amount ?? null]
-    });
-  }
-
-  /**
-   * @method onClose
-   * @description Méthode appelée lors du clic sur Annuler, la croix ou l'overlay.
-   */
+  /** Ferme la modale */
   onClose(): void {
-    this.errorMessage.set(null);
-    this.closed.emit();
+    if (!this.isSubmitting) {
+      this.closed.emit();
+    }
   }
 
-  /**
-   * @method submit
-   * @description Soumission du formulaire et création / mise à jour du logement.
-   */
-  async submit(): Promise<void> {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  /** Soumet le formulaire et effectue la requête HTTP vers le backend */
+  async onSubmit(): Promise<void> {
+    if (!this.formData.unit_number) {
+      this.errorMessage = 'Le numéro ou la référence du logement est obligatoire.';
       return;
     }
 
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-
-    const val = this.form.value;
-    const payload: CreateUnitDto = {
-      property_id: this.propertyId,
-      unit_number: val.unit_number.trim(),
-      name: val.name ? val.name.trim() : undefined,
-      type: val.type,
-      capacity: Number(val.capacity),
-      floor: val.floor !== null && val.floor !== '' ? Number(val.floor) : undefined,
-      surface: val.surface !== null && val.surface !== '' ? Number(val.surface) : undefined,
-      rent_amount: val.rent_amount !== null && val.rent_amount !== '' ? Number(val.rent_amount) : undefined,
-      charges_amount: val.charges_amount !== null && val.charges_amount !== '' ? Number(val.charges_amount) : undefined,
-      is_active: true
-    };
+    this.isSubmitting = true;
+    this.errorMessage = null;
 
     try {
-      if (this.unitToEdit) {
-        await this.unitService.updateUnit(this.unitToEdit.id, payload);
+      const currentUnit = this.unitToEdit();
+
+      if (currentUnit && currentUnit.id) {
+        // Mode Modification
+        await this.unitService.updateUnit(currentUnit.id, this.formData);
       } else {
-        await this.unitService.createUnit(payload);
+        // Mode Création (Cast explicite de property_id en string)
+        const payload = {
+          ...this.formData,
+          property_id: String(this.propertyId())
+        };
+        await this.unitService.createUnit(payload as any);
       }
 
+      // Notification au parent pour rafraîchir la liste
       this.saved.emit();
-      this.closed.emit();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement.';
-      this.errorMessage.set(msg);
-      this.isSubmitting.set(false);
+      this.errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement du logement.';
+    } finally {
+      this.isSubmitting = false;
     }
   }
 }
