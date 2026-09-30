@@ -1,0 +1,89 @@
+// --- BOUTON HAMBURGER MOBILE ---
+.mobile-hamburger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100; // Au-dessus de tout pour rester cliquable
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  // Masqué sur PC
+  @media (min-width: 1024px) {
+    display: none !important;
+  }
+}
+
+// --- FOND SOMBRE (BACKDROP) ---
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 98; // Juste sous la sidebar
+}
+
+// --- STRUCTURING DU LAYOUT ---
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+
+  // --- STYLES MOBILE (< 1024px) ---
+  @media (max-width: 1023px) {
+    app-ui-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      max-width: 80vw;
+      z-index: 99; // Au-dessus du backdrop
+      
+      // CACHÉE TOTALEMENT PAR DÉFAUT
+      transform: translateX(-100%);
+      visibility: hidden; // Évite tout reste visuel ou clic fantôme
+      transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
+
+      // AFFICHÉE UNIQUEMENT AVEC .is-open
+      &.is-open {
+        transform: translateX(0);
+        visibility: visible;
+      }
+    }
+
+    .app-content {
+      width: 100%;
+      padding-top: 3.5rem; // Dégage le bouton hamburger
+    }
+  }
+
+  // --- STYLES DESKTOP (≥ 1024px) ---
+  @media (min-width: 1024px) {
+    app-ui-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 260px;
+      transform: none !important;
+      visibility: visible !important;
+      z-index: 10;
+    }
+
+    .app-content {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      padding-top: 0;
+    }
+  }
+}

@@ -1,0 +1,339 @@
+/**
+ * @file calendar.scss
+ * @description Styles SCSS Mobile First pour la timeline du calendrier multi-logements.
+ * @architecture Enterprise Pattern - Feature Layer (Calendar Timeline)
+ * @responsive
+ *  - Mobile (<768px)  : En-têtes compacts, colonnes de 44px, scroll-snap magnétique.
+ *  - Tablette (768px-1279px) : Colonnes de 38px, scroll fluide (ex: Surface Pro en zoom 150%).
+ *  - Desktop (≥1280px) : Grille 100% fluide (table-layout fixed) sans barre de défilement.
+ */
+
+@use 'styles/breakpoints' as *;
+@use 'styles/variables' as *;
+
+/* ==========================================================================
+   1. CONTENEUR ET BARRE D'OUTILS (TOOLBAR)
+   ========================================================================== */
+
+.timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+
+  /**
+   * Barre d'outils supérieure (Boutons de navigation et sélecteur de vue).
+   * Sur mobile : Disposition verticale empilée.
+   * Sur tablette/desktop : Alignement horizontal côte à côte.
+   */
+  .timeline-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+
+    @include respond-to('md') {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-controls, 
+    .view-mode-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.375rem;
+
+      @include respond-to('md') {
+        justify-content: flex-start;
+      }
+    }
+
+    // Libellé de la période courante (ex: "Septembre 2026")
+    .current-range-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: $color-text-main;
+      text-transform: capitalize;
+    }
+  }
+}
+
+/* ==========================================================================
+   2. GRILLE DU CALENDRIER (TIMELINE GRID WRAPPER)
+   ========================================================================== */
+
+/**
+ * Conteneur défilant de la grille.
+ * Utilise le scroll-snap en Mobile/Tablette pour un calage automatique sur les jours.
+ */
+.timeline-grid-wrapper {
+  width: 100%;
+  border: 1px solid $color-border;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+
+  // Mobile First : Scroll-snap magnétique sur les jours
+  scroll-snap-type: x proximity;
+  scroll-padding-left: 130px; // Aligné sur la largeur de la colonne sticky mobile
+
+  @include respond-to('md') {
+    scroll-padding-left: 200px; // Aligné sur la colonne sticky tablette/desktop
+  }
+
+  // Désactivation du snap sur grand écran uniquement (xl = ≥1280px)
+  @include respond-to('xl') {
+    scroll-snap-type: none;
+    scroll-padding-left: 0;
+  }
+
+  /* ------------------------------------------------------------------------
+     Tableau HTML du planning
+     ------------------------------------------------------------------------ */
+  .timeline-table {
+    border-collapse: collapse;
+    width: max-content; // Permet aux colonnes de garder leur largeur min sur mobile
+    min-width: 100%;
+
+    // Sur grand écran (Desktop XL) : bascule en grille 100% ajustée à la fenêtre
+    @include respond-to('xl') {
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid $color-border;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /**
+     * Colonne de gauche fixée (Sticky) : Noms des propriétés et logements.
+     * Reste visible en permanence lors du défilement horizontal.
+     */
+    .col-properties-header, 
+    .unit-name-cell {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background: #ffffff;
+      width: 130px;
+      min-width: 130px;
+      padding: 0.5rem 0.625rem;
+      text-align: left;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+
+      @include respond-to('md') {
+        width: 200px;
+        min-width: 200px;
+        padding: 0.75rem 1rem;
+      }
+    }
+
+    .col-properties-header {
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: $color-text-main;
+      background: $color-bg-main;
+
+      @include respond-to('md') {
+        font-size: 0.875rem;
+      }
+    }
+
+    /**
+     * En-têtes des jours (Jours de la semaine + Numéro de jour).
+     */
+    .col-day-header {
+      width: 44px;
+      min-width: 44px;
+      padding: 0.375rem 0;
+      text-align: center;
+
+      @include respond-to('md') {
+        width: 38px;
+        min-width: 38px;
+      }
+
+      // Mode fluide sur Desktop
+      @include respond-to('xl') {
+        width: auto;
+        min-width: 0;
+      }
+
+      // Ancrage pour le défilement automatique et le scroll-snap
+      &.is-first-of-month, 
+      &.is-today {
+        scroll-snap-align: start;
+      }
+
+      // Séparateur visuel pour le début de mois
+      &.is-first-of-month {
+        border-left: 2px solid $color-primary;
+      }
+
+      .day-name {
+        display: block;
+        color: $color-text-muted;
+        font-weight: 600;
+        font-size: 0.625rem;
+        text-transform: uppercase;
+      }
+
+      .day-number {
+        display: block;
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: $color-text-main;
+      }
+
+      // Mise en évidence du jour actuel (Aujourd'hui)
+      &.is-today {
+        background-color: #eff6ff;
+        .day-number { 
+          color: $color-primary; 
+        }
+      }
+    }
+
+    /**
+     * Ligne de regroupement par propriété (Header de groupe).
+     */
+    .property-header-row {
+      background-color: $color-bg-main;
+
+      .property-name-cell {
+        padding: 0.5rem 0.75rem;
+        color: $color-text-main;
+        font-size: 0.8125rem;
+        border-top: 2px solid $color-border;
+        border-bottom: 1px solid $color-border;
+
+        // Maintient le nom de la propriété visible au scroll
+        strong {
+          position: sticky;
+          left: 0.75rem;
+          display: inline-block;
+          z-index: 11;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    /**
+     * Ligne d'un logement (Unit) avec grille temporelle et réservations.
+     */
+    .unit-row {
+      height: 3rem;
+
+      .unit-name-cell {
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: $color-text-main;
+        vertical-align: middle;
+
+        @include respond-to('md') {
+          font-size: 0.875rem;
+        }
+      }
+
+      .timeline-slots-td {
+        padding: 0;
+        position: relative;
+      }
+
+      .timeline-slots-container {
+        position: relative;
+        width: 100%;
+        height: 3rem;
+
+        /* Grille d'arrière-plan représentant les cellules de jours */
+        .slots-grid {
+          display: flex;
+          width: 100%;
+          height: 100%;
+
+          .time-slot-cell {
+            flex: 0 0 44px;
+            width: 44px;
+            border-right: 1px solid $color-border;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+
+            @include respond-to('md') {
+              flex: 0 0 38px;
+              width: 38px;
+            }
+
+            @include respond-to('xl') {
+              flex: 1;
+              width: auto;
+              min-width: 0;
+            }
+
+            &.is-first-of-month {
+              border-left: 2px solid $color-primary;
+            }
+
+            &:last-child { 
+              border-right: none; 
+            }
+
+            &:hover { 
+              background-color: #f1f5f9; 
+            }
+
+            &.is-today { 
+              background-color: rgba(37, 99, 235, 0.04); 
+            }
+          }
+        }
+
+        /* Calque de superposition (Overlay) contenant les barres de réservation */
+        .bookings-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none; // Permet de cliquer au travers si aucune réservation n'occupe la zone
+
+          .booking-bar {
+            pointer-events: auto; // Réactive les événements utilisateur (clic) sur la réservation
+            position: absolute;
+            top: 4px;
+            height: calc(100% - 8px);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            box-sizing: border-box;
+            color: #ffffff;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 5;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+
+            .booking-text {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            // Couleurs par canal de réservation (utilisant les variables globales)
+            &.source-airbnb { background-color: $color-airbnb; }
+            &.source-booking { background-color: $color-booking; }
+            &.source-direct { background-color: $color-direct; }
+            &.source-manual, 
+            &.source-manual_block { background-color: $color-manual; }
+          }
+        }
+      }
+    }
+  }
+}

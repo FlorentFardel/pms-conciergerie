@@ -1,0 +1,30 @@
+<aside class="sidebar-container" [class.is-collapsed]="!isOpen()">
+  <!-- EN-TÊTE SIDEBAR AVEC HAMBURGER ET LOGO -->
+  <div class="sidebar-header">
+    <button class="hamburger-btn" (click)="toggleSidebar()" aria-label="Menu principal">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    @if (isOpen()) {
+      <span class="brand-title">ChannelManager</span>
+    }
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav class="sidebar-nav">
+    @for (item of navItems; track item.route) {
+      <a 
+        [routerLink]="item.route" 
+        routerLinkActive="active-link" 
+        class="nav-link" 
+        [title]="item.label"
+      >
+        <span class="nav-icon">{{ item.icon }}</span>
+        @if (isOpen()) {
+          <span class="nav-label">{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+</aside>

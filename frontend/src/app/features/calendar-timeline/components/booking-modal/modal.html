@@ -1,0 +1,87 @@
+<app-ui-modal 
+  [title]="!booking() ? 'Ajouter une réservation / blocage' : (isEditing ? 'Modifier la réservation' : 'Détails de la réservation')" 
+  (close)="close.emit()"
+>
+  <div modal-body>
+    @if (booking() && !isEditing) {
+      <!-- MODE LECTURE / CONSULTATION -->
+      <div class="booking-details-content">
+        <div class="detail-row">
+          <strong>Client / Motif :</strong>
+          <span>{{ booking()?.guestName || booking()?.block_reason || 'Réservation' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Canal / Origine :</strong>
+          <span class="badge" [class]="'badge-' + (booking()?.channel || 'manual').toLowerCase()">
+            {{ booking()?.channel }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <strong>Check-in (Arrivée) :</strong>
+          <span>{{ booking()?.check_in }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Check-out (Départ) :</strong>
+          <span>{{ booking()?.check_out }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Prix Total :</strong>
+          <span>{{ booking()?.total_price ? booking()?.total_price + ' €' : 'Non renseigné' }}</span>
+        </div>
+      </div>
+    } @else {
+      <!-- MODE ÉDITION / CRÉATION -->
+      <form id="bookingModalForm" [formGroup]="bookingForm" (ngSubmit)="onSave()" class="booking-form">
+        <div class="form-group">
+          <label for="modalGuestName">Nom du client ou Motif</label>
+          <input 
+            id="modalGuestName" 
+            type="text" 
+            formControlName="guestName" 
+            placeholder="Ex: Travaux ou Jean Dupont" 
+            class="form-control" 
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalCheckIn">Date d'arrivée</label>
+            <input id="modalCheckIn" type="date" formControlName="check_in" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="modalCheckOut">Date de départ</label>
+            <input id="modalCheckOut" type="date" formControlName="check_out" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalChannel">Origine</label>
+            <select id="modalChannel" formControlName="channel" class="form-control">
+              <option value="MANUAL">Blocage Manuel</option>
+              <option value="DIRECT">Réservation Directe</option>
+              <option value="AIRBNB">Airbnb</option>
+              <option value="BOOKING">Booking.com</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modalTotalPrice">Prix Total (€)</label>
+            <input id="modalTotalPrice" type="number" formControlName="total_price" class="form-control" />
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+
+  <div modal-footer class="modal-actions">
+    @if (booking() && !isEditing) {
+      <app-ui-button type="button" variant="secondary" (clicked)="onDelete()">Libérer / Supprimer</app-ui-button>
+      <app-ui-button type="button" variant="primary" (clicked)="startEdit()">Modifier</app-ui-button>
+    } @else {
+      <app-ui-button type="button" variant="secondary" (clicked)="close.emit()">Annuler</app-ui-button>
+      <app-ui-button type="submit" form="bookingModalForm" variant="primary" [disabled]="bookingForm.invalid">
+        Enregistrer
+      </app-ui-button>
+    }
+  </div>
+</app-ui-modal>

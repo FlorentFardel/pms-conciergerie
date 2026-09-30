@@ -1,0 +1,30 @@
+/**
+ * @file _breakpoints.scss
+ * @description Mixins Mobile First unifiées pour la gestion responsive.
+ */
+
+$breakpoint-sm: 640px;   // Mobiles larges
+$breakpoint-md: 768px;   // Tablettes portrait
+$breakpoint-lg: 1024px;  // Tablettes paysage & Surface Pro
+$breakpoint-xl: 1280px;  // Desktop / Laptop
+$breakpoint-2xl: 1536px; // Grands écrans
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'sm' {
+    @media (min-width: $breakpoint-sm) { @content; }
+  } @else if $breakpoint == 'md' {
+    @media (min-width: $breakpoint-md) { @content; }
+  } @else if $breakpoint == 'lg' {
+    @media (min-width: $breakpoint-lg) { @content; }
+  } @else if $breakpoint == 'xl' {
+    @media (min-width: $breakpoint-xl) { @content; }
+  } @else if $breakpoint == '2xl' {
+    @media (min-width: $breakpoint-2xl) { @content; }
+  }
+}
+
+@mixin mobile-only {
+  @media (max-width: #{$breakpoint-lg - 1px}) {
+    @content;
+  }
+}

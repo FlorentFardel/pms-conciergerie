@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import propertyRoutes from './modules/properties/property.routes.js';
 import unitRoutes from './modules/units/unit.routes.js';
+import bookingRoutes from './modules/booking/booking.route';
 const app = express();
+
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +18,7 @@ app.use((_req, res, next) => {
 // Tes routes
 app.use('/api/properties', propertyRoutes);
 app.use('/api/units', unitRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

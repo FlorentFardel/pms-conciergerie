@@ -35,6 +35,13 @@ export class PropertyService {
   readonly error = signal<string | null>(null);
 
   /**
+   * Initialise le service et déclenche le chargement initial des propriétés au démarrage.
+   */
+  constructor() {
+    this.loadProperties();
+  }
+
+  /**
    * @method loadProperties
    * @description Effectue une requête HTTP GET pour récupérer l'ensemble des propriétés et met à jour le signal `properties`.
    * @returns {Promise<void>} Promesse résolue une fois les données chargées et affectées au signal.

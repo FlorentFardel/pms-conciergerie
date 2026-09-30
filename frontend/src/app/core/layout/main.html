@@ -1,0 +1,25 @@
+<!-- Bouton hamburger (visible uniquement sur mobile) -->
+<button 
+  class="mobile-hamburger-btn" 
+  (click)="toggleSidebar()" 
+  aria-label="Basculer le menu"
+>
+  <span>☰</span>
+</button>
+
+<!-- Fond sombre (Backdrop) : détruit du DOM dès que isSidebarOpen est false -->
+@if (isSidebarOpen()) {
+  <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
+}
+
+<div class="app-layout">
+  <!-- Sidebar : masquée hors-écran par défaut sur mobile -->
+  <app-ui-sidebar 
+    [class.is-open]="isSidebarOpen()" 
+    (linkClicked)="closeSidebar()"
+  ></app-ui-sidebar>
+
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

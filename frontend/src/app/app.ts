@@ -1,18 +1,16 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+/**
+ * @file app.ts
+ * @description Composant racine minimal Angular (Point d'ancrage du routeur global).
+ */
+
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-/**
- * @component AppComponent
- * @description Composant racine de l'application PMS Conciergerie.
- */
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  imports: [RouterOutlet],
+  template: `<router-outlet></router-outlet>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent {
-  title = 'pms-frontend';
-}
+export class AppComponent {}
