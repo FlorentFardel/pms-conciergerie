@@ -3,9 +3,9 @@
  * @description Styles SCSS Mobile First pour la timeline du calendrier multi-logements.
  * @architecture Enterprise Pattern - Feature Layer (Calendar Timeline)
  * @responsive
- *  - Mobile (<768px)  : En-têtes compacts, colonnes de 44px, scroll-snap magnétique.
- *  - Tablette (768px-1279px) : Colonnes de 38px, scroll fluide (ex: Surface Pro en zoom 150%).
- *  - Desktop (≥1280px) : Grille 100% fluide (table-layout fixed) sans barre de défilement.
+ *   - Mobile (<768px)   : En-têtes compacts, colonnes de 44px, scroll-snap magnétique.
+ *   - Tablette (768px-1279px) : Colonnes de 38px, scroll fluide.
+ *   - Desktop (≥1280px) : Grille 100% fluide (table-layout fixed) sans barre de défilement.
  */
 
 @use 'styles/breakpoints' as *;
@@ -66,9 +66,11 @@
 
 /**
  * Conteneur défilant de la grille.
- * Utilise le scroll-snap en Mobile/Tablette pour un calage automatique sur les jours.
+ * Isole le contexte d'empilement pour empêcher la colonne fixe de déborder sur la sidebar globale.
  */
 .timeline-grid-wrapper {
+  position: relative;
+  z-index: 1; // 🎯 z-index faible pour rester strictement SOUS la sidebar globale (z-index: 10)
   width: 100%;
   border: 1px solid $color-border;
   border-radius: 0.5rem;
@@ -112,13 +114,13 @@
 
     /**
      * Colonne de gauche fixée (Sticky) : Noms des propriétés et logements.
-     * Reste visible en permanence lors du défilement horizontal.
+     * Reste visible lors du défilement du tableau tout en s'effaçant sous le menu principal.
      */
     .col-properties-header, 
     .unit-name-cell {
       position: sticky;
       left: 0;
-      z-index: 10;
+      z-index: 3; // 🎯 z-index ajusté à 3 (inférieur au z-index 10 de la sidebar)
       background: #ffffff;
       width: 130px;
       min-width: 130px;
@@ -212,12 +214,12 @@
         border-top: 2px solid $color-border;
         border-bottom: 1px solid $color-border;
 
-        // Maintient le nom de la propriété visible au scroll
+        // Maintient le nom de la propriété visible au scroll interne
         strong {
           position: sticky;
           left: 0.75rem;
           display: inline-block;
-          z-index: 11;
+          z-index: 4; // 🎯 Réduit à 4 pour ne pas passer au-dessus du menu principal
           white-space: nowrap;
         }
       }
@@ -299,10 +301,10 @@
           left: 0;
           width: 100%;
           height: 100%;
-          pointer-events: none; // Permet de cliquer au travers si aucune réservation n'occupe la zone
+          pointer-events: none;
 
           .booking-bar {
-            pointer-events: auto; // Réactive les événements utilisateur (clic) sur la réservation
+            pointer-events: auto;
             position: absolute;
             top: 4px;
             height: calc(100% - 8px);
@@ -315,7 +317,7 @@
             font-size: 0.6875rem;
             font-weight: 600;
             cursor: pointer;
-            z-index: 5;
+            z-index: 2; // 🎯 z-index ajusté à 2
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 
@@ -325,7 +327,7 @@
               text-overflow: ellipsis;
             }
 
-            // Couleurs par canal de réservation (utilisant les variables globales)
+            // Couleurs par canal de réservation
             &.source-airbnb { background-color: $color-airbnb; }
             &.source-booking { background-color: $color-booking; }
             &.source-direct { background-color: $color-direct; }

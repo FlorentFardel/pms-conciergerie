@@ -1,98 +1,27 @@
 <app-ui-card>
   <div class="timeline-container">
-    <!-- BARRE D'OUTILS DE NAVIGATION TEMPORELLE -->
-    <header class="timeline-toolbar">
-      <div class="nav-controls">
-        <app-ui-button variant="secondary" size="sm" (clicked)="navigateTime(-1)">&larr;</app-ui-button>
-        <app-ui-button variant="secondary" size="sm" (clicked)="goToToday()">Aujourd'hui</app-ui-button>
-        <app-ui-button variant="secondary" size="sm" (clicked)="navigateTime(1)">&rarr;</app-ui-button>
-        <span class="current-range-title">{{ currentRangeLabel() }}</span>
-      </div>
+    <!-- BARRE D'OUTILS -->
+    <app-calendar-toolbar
+      [viewMode]="viewMode()"
+      [currentRangeLabel]="currentRangeLabel()"
+      (viewModeChange)="setViewMode($event)"
+      (navigate)="navigateTime($event)"
+      (today)="goToToday()"
+    ></app-calendar-toolbar>
 
-      <div class="view-mode-selector">
-        <app-ui-button [variant]="viewMode() === 'day' ? 'primary' : 'secondary'" size="sm" (clicked)="setViewMode('day')">Jour</app-ui-button>
-        <app-ui-button [variant]="viewMode() === 'week' ? 'primary' : 'secondary'" size="sm" (clicked)="setViewMode('week')">Semaine</app-ui-button>
-        <app-ui-button [variant]="viewMode() === 'month' ? 'primary' : 'secondary'" size="sm" (clicked)="setViewMode('month')">Mois</app-ui-button>
-        <app-ui-button [variant]="viewMode() === 'quarter' ? 'primary' : 'secondary'" size="sm" (clicked)="setViewMode('quarter')">Trimestre</app-ui-button>
-      </div>
-    </header>
-
-    <!-- GRILLE DE LA TIMELINE -->
-    <div class="timeline-grid-wrapper" [class.is-quarter-view]="viewMode() === 'quarter'">
-      <table class="timeline-table">
-        <thead>
-          <tr>
-            <th class="col-properties-header">Logements</th>
-            @for (day of timeColumns(); track day.dateStr) {
-              <th 
-                class="col-day-header" 
-                [class.is-today]="day.isToday"
-                [class.is-first-of-month]="day.isFirstOfMonth"
-              >
-                <span class="day-name">{{ day.dayName }}</span>
-                <span class="day-number">{{ day.dayNumber }}</span>
-              </th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (group of groupedProperties(); track group.propertyId) {
-            <tr class="property-header-row">
-              <td class="property-name-cell" [attr.colspan]="timeColumns().length + 1">
-                <strong>🏢 {{ group.propertyName }}</strong>
-              </td>
-            </tr>
-
-            @for (unit of group.units; track unit.id) {
-              <tr class="unit-row">
-                <td class="unit-name-cell">
-                  <span class="unit-label">{{ unit.name || 'Logement ' + unit.unit_number }}</span>
-                </td>
-
-                <td [attr.colspan]="timeColumns().length" class="timeline-slots-td">
-                  <div class="timeline-slots-container">
-                    
-                    <!-- FOND : CASE PAR JOUR -->
-                    <div class="slots-grid">
-                      @for (day of timeColumns(); track day.dateStr) {
-                        <div 
-                          class="time-slot-cell" 
-                          [class.is-today]="day.isToday"
-                          [class.is-first-of-month]="day.isFirstOfMonth"
-                          (click)="openCreateModal(unit.id, day.dateStr)"
-                          title="Cliquer pour ajouter une réservation"
-                        ></div>
-                      }
-                    </div>
-
-                    <!-- OVERLAY : BARRES DE RÉSERVATION EN % -->
-                    <div class="bookings-overlay">
-                      @for (item of getUnitBookings(unit.id); track item.booking.id) {
-                        <div 
-                          class="booking-bar"
-                          [class]="'source-' + (item.booking.channel || 'manual').toLowerCase()"
-                          [style.left.%]="item.leftPercent"
-                          [style.width.%]="item.widthPercent"
-                          (click)="$event.stopPropagation(); openBookingDetails(item.booking)"
-                          [title]="item.booking.guestName || item.booking.block_reason || 'Réservation'"
-                        >
-                          <span class="booking-text">{{ item.booking.guestName || item.booking.block_reason || 'Réservation' }}</span>
-                        </div>
-                      }
-                    </div>
-
-                  </div>
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
+    <!-- GRILLE DE LA TIMELINE DECOUPEE -->
+    <app-calendar-grid
+      [groupedProperties]="groupedProperties()"
+      [timeColumns]="timeColumns()"
+      [viewMode]="viewMode()"
+      [getUnitBookingsFn]="getUnitBookingsBound"
+      (slotClick)="openCreateModal($event.unitId, $event.dateStr)"
+      (bookingClick)="openBookingDetails($event)"
+    ></app-calendar-grid>
   </div>
 </app-ui-card>
 
-<!-- MODALE DE GESTION DES RÉSERVATIONS (DECOUPÉE) -->
+<!-- MODALE DE GESTION DES RÉSERVATIONS -->
 @if (selectedBooking() || newBookingSelection()) {
   <app-booking-modal
     [booking]="selectedBooking()"

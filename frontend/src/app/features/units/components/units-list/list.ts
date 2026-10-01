@@ -24,11 +24,25 @@ export class UnitsListComponent implements OnInit {
   /** Service métier d'accès aux données des logements */
   private readonly unitService: UnitService = inject(UnitService);
 
+  /** Stockage interne de l'ID de la propriété parente */
+  private _propertyId?: string;
+
   /**
    * ID optionnel de la propriété parente pour filtrer les logements.
+   * Déclenche un rechargement dès que l'ID est disponible.
+   * 
    * @type {string | undefined}
    */
-  @Input() propertyId?: string;
+  @Input()
+  set propertyId(value: string | undefined) {
+    this._propertyId = value;
+    if (value) {
+      this.loadUnits();
+    }
+  }
+  get propertyId(): string | undefined {
+    return this._propertyId;
+  }
 
   /**
    * Signal d'état contenant la liste des logements chargés et triés.

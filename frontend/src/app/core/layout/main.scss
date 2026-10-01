@@ -1,3 +1,10 @@
+/**
+ * @file main.scss
+ * @module Core/Layout
+ * @description Styles globaux pour le squelette de l'application.
+ * Gère les dimensions dynamiques du contenu, la superposition Z-Index et le responsive.
+ */
+
 // --- BOUTON HAMBURGER MOBILE ---
 .mobile-hamburger-btn {
   display: flex;
@@ -6,7 +13,7 @@
   position: fixed;
   top: 0.75rem;
   left: 0.75rem;
-  z-index: 100; // Au-dessus de tout pour rester cliquable
+  z-index: 100;
   width: 2.5rem;
   height: 2.5rem;
   background-color: #0f172a;
@@ -17,26 +24,37 @@
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 
-  // Masqué sur PC
   @media (min-width: 1024px) {
     display: none !important;
   }
 }
 
-// --- FOND SOMBRE (BACKDROP) ---
+// --- FOND SOMBRE (BACKDROP MOBILE) ---
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.5);
+  background-color: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(2px);
-  z-index: 98; // Juste sous la sidebar
+  z-index: 98;
+
+  @media (min-width: 1024px) {
+    display: none !important;
+  }
 }
 
-// --- STRUCTURING DU LAYOUT ---
+// --- STRUCTURING DU LAYOUT GLOBAL ---
 .app-layout {
   display: flex;
   width: 100%;
   min-height: 100vh;
+
+  // Largeur par défaut de la sidebar repliée
+  --sidebar-width: 70px;
+
+  // Quand la barre interne est dépliée (n'a pas .is-collapsed)
+  &:has(app-ui-sidebar .sidebar-container:not(.is-collapsed)) {
+    --sidebar-width: 260px;
+  }
 
   // --- STYLES MOBILE (< 1024px) ---
   @media (max-width: 1023px) {
@@ -47,14 +65,11 @@
       bottom: 0;
       width: 280px;
       max-width: 80vw;
-      z-index: 99; // Au-dessus du backdrop
-      
-      // CACHÉE TOTALEMENT PAR DÉFAUT
+      z-index: 99;
       transform: translateX(-100%);
-      visibility: hidden; // Évite tout reste visuel ou clic fantôme
+      visibility: hidden;
       transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
 
-      // AFFICHÉE UNIQUEMENT AVEC .is-open
       &.is-open {
         transform: translateX(0);
         visibility: visible;
@@ -63,7 +78,7 @@
 
     .app-content {
       width: 100%;
-      padding-top: 3.5rem; // Dégage le bouton hamburger
+      padding-top: 3.5rem;
     }
   }
 
@@ -74,16 +89,22 @@
       top: 0;
       left: 0;
       bottom: 0;
-      width: 260px;
+      width: var(--sidebar-width);
+      z-index: 100 !important;
       transform: none !important;
       visibility: visible !important;
-      z-index: 10;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .app-content {
-      margin-left: 260px;
-      width: calc(100% - 260px);
+      margin-left: var(--sidebar-width);
+      width: calc(100% - var(--sidebar-width));
       padding-top: 0;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 }

@@ -1,0 +1,156 @@
+@use 'styles/variables' as *;
+
+.timeline-grid-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  background-color: var(--color-bg-card, #ffffff);
+
+  .timeline-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 800px;
+
+    th, td {
+      border: 1px solid var(--color-border, #e5e7eb);
+      padding: 0;
+    }
+
+    .col-properties-header,
+    .unit-name-cell {
+      width: 200px;
+      min-width: 200px;
+      max-width: 200px;
+      padding: 0.5rem 0.75rem;
+      background-color: var(--color-bg-card, #ffffff);
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      border-right: 2px solid var(--color-border, #d1d5db);
+    }
+
+    .col-day-header {
+      text-align: center;
+      padding: 0.5rem 0.25rem;
+      font-size: 0.75rem;
+      background-color: var(--color-bg-muted, #f9fafb);
+
+      .day-name {
+        display: block;
+        color: var(--color-text-muted, #6b7280);
+        text-transform: capitalize;
+      }
+
+      .day-number {
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      &.is-today {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--color-primary, #2563eb);
+      }
+
+      &.is-first-of-month {
+        border-left: 2px solid var(--color-text-muted, #9ca3af);
+      }
+    }
+
+    .property-header-row {
+      background-color: var(--color-bg-muted, #f3f4f6);
+
+      .property-name-cell {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+      }
+    }
+
+    .unit-row {
+      height: 48px;
+
+      .unit-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+      }
+    }
+
+    .timeline-slots-td {
+      position: relative;
+      padding: 0;
+    }
+
+    .timeline-slots-container {
+      position: relative;
+      width: 100%;
+      height: 48px;
+    }
+
+    .slots-grid {
+      display: flex;
+      width: 100%;
+      height: 100%;
+
+      .time-slot-cell {
+        flex: 1;
+        height: 100%;
+        border-right: 1px solid var(--color-border, #f3f4f6);
+        cursor: pointer;
+        transition: background-color 0.15s;
+
+        &:hover {
+          background-color: var(--color-bg-hover, #f3f4f6);
+        }
+
+        &.is-today {
+          background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        &.is-first-of-month {
+          border-left: 2px solid var(--color-text-muted, #9ca3af);
+        }
+      }
+    }
+
+    .bookings-overlay {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      right: 0;
+      bottom: 4px;
+      pointer-events: none;
+
+      .booking-bar {
+        position: absolute;
+        height: calc(100% - 8px);
+        top: 4px;
+        border-radius: 4px;
+        padding: 0 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        cursor: pointer;
+        pointer-events: auto;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+        .booking-text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        &.source-airbnb { background-color: #ff5a5f; }
+        &.source-booking { background-color: #003580; }
+        &.source-direct { background-color: #10b981; }
+        &.source-manual,
+        &.source-manual_block { background-color: #6b7280; }
+      }
+    }
+  }
+}

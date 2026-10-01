@@ -1,4 +1,8 @@
-<!-- Bouton hamburger (visible uniquement sur mobile) -->
+<!-- ========================================================================= -->
+<!-- VUE PRINCIPALE : SQUELETTE GLOBAL DU LAYOUT                               -->
+<!-- ========================================================================= -->
+
+<!-- Bouton hamburger (visible uniquement sur mobile <1024px) -->
 <button 
   class="mobile-hamburger-btn" 
   (click)="toggleSidebar()" 
@@ -7,18 +11,19 @@
   <span>☰</span>
 </button>
 
-<!-- Fond sombre (Backdrop) : détruit du DOM dès que isSidebarOpen est false -->
+<!-- Fond sombre (Backdrop Mobile) : détruit du DOM quand isSidebarOpen est false -->
 @if (isSidebarOpen()) {
   <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
 }
 
 <div class="app-layout">
-  <!-- Sidebar : masquée hors-écran par défaut sur mobile -->
+  <!-- Composant Navigation Sidebar -->
   <app-ui-sidebar 
     [class.is-open]="isSidebarOpen()" 
     (linkClicked)="closeSidebar()"
   ></app-ui-sidebar>
 
+  <!-- Zone de contenu applicatif (Routage dynamique) -->
   <main class="app-content">
     <router-outlet></router-outlet>
   </main>

@@ -1,0 +1,71 @@
+<div class="timeline-grid-wrapper" [class.is-quarter-view]="viewMode() === 'quarter'">
+  <table class="timeline-table">
+    <thead>
+      <tr>
+        <th class="col-properties-header">Logements</th>
+        @for (day of timeColumns(); track day.dateStr) {
+          <th 
+            class="col-day-header" 
+            [class.is-today]="day.isToday"
+            [class.is-first-of-month]="day.isFirstOfMonth"
+          >
+            <span class="day-name">{{ day.dayName }}</span>
+            <span class="day-number">{{ day.dayNumber }}</span>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (group of groupedProperties(); track group.propertyId) {
+        <tr class="property-header-row">
+          <td class="property-name-cell" [attr.colspan]="timeColumns().length + 1">
+            <strong>🏢 {{ group.propertyName }}</strong>
+          </td>
+        </tr>
+
+        @for (unit of group.units; track unit.id) {
+          <tr class="unit-row">
+            <td class="unit-name-cell">
+              <span class="unit-label">{{ unit.name || 'Logement ' + unit.unit_number }}</span>
+            </td>
+
+            <td [attr.colspan]="timeColumns().length" class="timeline-slots-td">
+              <div class="timeline-slots-container">
+                
+                <!-- FOND : CASE PAR JOUR -->
+                <div class="slots-grid">
+                  @for (day of timeColumns(); track day.dateStr) {
+                    <div 
+                      class="time-slot-cell" 
+                      [class.is-today]="day.isToday"
+                      [class.is-first-of-month]="day.isFirstOfMonth"
+                      (click)="onSlotClick(unit.id, day.dateStr)"
+                      title="Cliquer pour ajouter une réservation"
+                    ></div>
+                  }
+                </div>
+
+                <!-- OVERLAY : BARRES DE RÉSERVATION EN % -->
+                <div class="bookings-overlay">
+                  @for (item of getUnitBookingsFn()(unit.id); track item.booking.id) {
+                    <div 
+                      class="booking-bar"
+                      [class]="'source-' + (item.booking.channel || 'manual').toLowerCase()"
+                      [style.left.%]="item.leftPercent"
+                      [style.width.%]="item.widthPercent"
+                      (click)="onBookingClick($event, item.booking)"
+                      [title]="item.booking.guestName || item.booking.block_reason || 'Réservation'"
+                    >
+                      <span class="booking-text">{{ item.booking.guestName || item.booking.block_reason || 'Réservation' }}</span>
+                    </div>
+                  }
+                </div>
+
+              </div>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

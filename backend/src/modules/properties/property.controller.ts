@@ -30,15 +30,15 @@ export class PropertyController {
 
   /**
    * @method getById
-   * @description Récupère les détails d'une propriété spécifique à partir de son identifiant.
+   * @description Récupère les détails d'une propriété spécifique à partir de son UUID ou de son slug.
    * @route GET /api/properties/:id
-   * @param {Request<{ id: string }>} req - Requête contenant le paramètre d'URL `id`.
+   * @param {Request<{ id: string }>} req - Requête contenant le paramètre d'URL `id` (UUID ou slug).
    * @param {Response} res - Objet réponse Express.
    * @returns {Promise<void>}
    */
   getById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
     try {
-      const property = await this.service.getPropertyById(req.params.id);
+      const property = await this.service.getPropertyByIdOrSlug(req.params.id);
       res.json(property);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Propriété introuvable.';
@@ -84,7 +84,7 @@ export class PropertyController {
 
   /**
    * @method delete
-   * @description Supprime définitivement une propriété à partir de son identifiant.
+   * @description Supprime définitivement une propriété à partir de son identifiant UUID.
    * @route DELETE /api/properties/:id
    * @param {Request<{ id: string }>} req - Requête Express contenant le paramètre `id`.
    * @param {Response} res - Objet réponse Express (Status 204 No Content).

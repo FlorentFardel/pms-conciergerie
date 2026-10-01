@@ -1,0 +1,53 @@
+<div class="calendar-toolbar">
+  <div class="toolbar-section left">
+    <app-ui-button variant="secondary" size="sm" (clicked)="onGoToToday()">
+      Aujourd'hui
+    </app-ui-button>
+
+    <div class="nav-controls">
+      <app-ui-button variant="secondary" size="sm" (clicked)="onNavigate(-1)" aria-label="Période précédente">
+        &larr;
+      </app-ui-button>
+      <app-ui-button variant="secondary" size="sm" (clicked)="onNavigate(1)" aria-label="Période suivante">
+        &rarr;
+      </app-ui-button>
+    </div>
+
+    <h2 class="current-label">{{ currentRangeLabel() }}</h2>
+  </div>
+
+  <div class="toolbar-section right">
+    <div class="view-mode-selector">
+      <app-ui-button 
+        [variant]="viewMode() === 'day' ? 'primary' : 'secondary'" 
+        size="sm" 
+        (clicked)="onSetViewMode('day')">
+        Jour
+      </app-ui-button>
+      <app-ui-button 
+        [variant]="viewMode() === 'week' ? 'primary' : 'secondary'" 
+        size="sm" 
+        (clicked)="onSetViewMode('week')">
+        Semaine
+      </app-ui-button>
+      <app-ui-button 
+        [variant]="viewMode() === '2weeks' ? 'primary' : 'secondary'" 
+        size="sm" 
+        (clicked)="onSetViewMode('2weeks')">
+        2 Semaines
+      </app-ui-button>
+      <app-ui-button 
+        [variant]="viewMode() === 'month' ? 'primary' : 'secondary'" 
+        size="sm" 
+        (clicked)="onSetViewMode('month')">
+        Mois
+      </app-ui-button>
+      <app-ui-button 
+        [variant]="viewMode() === 'quarter' ? 'primary' : 'secondary'" 
+        size="sm" 
+        (clicked)="onSetViewMode('quarter')">
+        Trimestre
+      </app-ui-button>
+    </div>
+  </div>
+</div>
