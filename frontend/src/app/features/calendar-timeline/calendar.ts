@@ -1,23 +1,24 @@
 /**
  * @file calendar.ts
  * @module Features/CalendarTimeline
- * @description Smart Component orchestrateur de la vue planning (gestion de l'état local et des modales).
+ * @description Smart Component orchestrateur de la vue planning (gestion de l'état local, synchronisation iCal et modales).
  */
 
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiCardComponent } from '../../shared/components/ui-card/modal';
 import { BookingModalComponent } from './components/booking-modal/modal';
 import { CalendarToolbarComponent } from './components/calendar-toolbar/toolbar';
 import { CalendarGridComponent } from './components/calendar-grid/grid';
 import { CalendarService } from './services/calendar';
-import { ViewMode, Booking, RenderedBooking, TimeColumn } from './models/timeline';
+import { IcalService } from '../units/services/ical';
+import { IcalEvent } from '../units/models/ical-event';
+import { Unit } from '../units/models/unit';
+import { ViewMode, Booking, RenderedBooking, TimeColumn, BookingChannel } from './models/timeline';
 import { buildTimeColumns, formatDateToIso, shiftDate } from '../../shared/utils/date';
 
 /**
  * Composant conteneur principal du calendrier.
- * Reçoit les signaux du `CalendarService`, calcule les barres de réservation 
- * et gère le cycle de vie des modales.
  */
 @Component({
   selector: 'app-calendar-timeline',
@@ -34,40 +35,40 @@ import { buildTimeColumns, formatDateToIso, shiftDate } from '../../shared/utils
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CalendarTimelineComponent implements OnInit {
-  /** Service centralisé de données du planning */
+  /* ==========================================================================
+     1. INJECTION DES SERVICES
+     ========================================================================== */
+
   private readonly calendarService = inject(CalendarService);
+  private readonly icalService = inject(IcalService);
 
-  /** Mode d'affichage temporel actif */
+  /* ==========================================================================
+     2. ÉTATS ET SIGNALS
+     ========================================================================== */
+
   readonly viewMode = signal<ViewMode>('week');
-
-  /** Date pivot pour la navigation temporelle */
   readonly currentDate = signal<Date>(new Date());
-
-  /** Réservation ouverte dans la modale (`null` si fermeture) */
   readonly selectedBooking = signal<Booking | null>(null);
-
-  /** Données de pré-remplissage pour une création via un clic sur un créneau */
   readonly newBookingSelection = signal<{ unitId: string; startDate: string; endDate: string } | null>(null);
+  readonly icalBookings = signal<Booking[]>([]);
 
-  /** Liste des propriétés groupées transmise par le service */
   readonly groupedProperties = this.calendarService.properties;
+  private readonly dbBookings = this.calendarService.bookings;
 
-  /** Liste des réservations transmise par le service */
-  readonly bookings = this.calendarService.bookings;
+  readonly bookings = computed<Booking[]>(() => {
+    return [...this.dbBookings(), ...this.icalBookings()];
+  });
 
-  /** État de chargement du service */
   readonly isLoading = this.calendarService.isLoading;
 
-  /**
-   * Calcul des colonnes de dates (jours) à afficher selon le mode de vue et la date courante.
-   */
+  /* ==========================================================================
+     3. CALCULS COMPUTED
+     ========================================================================== */
+
   readonly timeColumns = computed(() => {
     return buildTimeColumns(this.viewMode(), this.currentDate());
   });
 
-  /**
-   * Libellé formaté du mois et de l'année de la période affichée.
-   */
   readonly currentRangeLabel = computed(() => {
     const cols = this.timeColumns();
     if (cols.length === 0) return '';
@@ -75,53 +76,44 @@ export class CalendarTimelineComponent implements OnInit {
     return first.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   });
 
-  /**
-   * Liaison de méthode transmise en Input à `CalendarGridComponent`
-   * pour calculer les segments visuels des réservations.
-   */
   readonly getUnitBookingsBound = (unitId: string): RenderedBooking[] => {
     return this.getUnitBookings(unitId);
   };
 
-  /**
-   * Initialisation : déclenche la récupération des données en BDD.
-   */
+  /* ==========================================================================
+     4. CONSTRUCTEUR & CYCLE DE VIE
+     ========================================================================== */
+
+  constructor() {
+    effect(() => {
+      const properties = this.groupedProperties();
+      if (properties && properties.length > 0) {
+        this.syncIcalEvents(properties);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.calendarService.loadCalendarData();
   }
 
-  /**
-   * Modifie le mode de vue de la timeline.
-   * 
-   * @param mode Nouveau mode sélectionné ('day' | 'week' | '2weeks' | 'month' | 'quarter')
-   */
+  /* ==========================================================================
+     5. NAVIGATION ET MODALES
+     ========================================================================== */
+
   setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
   }
 
-  /**
-   * Avance ou recule la vue temporelle.
-   * 
-   * @param direction -1 pour la période précédente, +1 pour la suivante
-   */
   navigateTime(direction: number): void {
     const updatedDate = shiftDate(this.currentDate(), this.viewMode(), direction);
     this.currentDate.set(updatedDate);
   }
 
-  /**
-   * Repositionne le calendrier sur le jour actuel.
-   */
   goToToday(): void {
     this.currentDate.set(new Date());
   }
 
-  /**
-   * Ouvre la modale de création sur un logement et une date spécifiés.
-   * 
-   * @param unitId Identifiant du logement
-   * @param dateStr Date d'arrivée sélectionnée (format 'YYYY-MM-DD')
-   */
   openCreateModal(unitId: string, dateStr: string): void {
     this.selectedBooking.set(null);
 
@@ -136,29 +128,16 @@ export class CalendarTimelineComponent implements OnInit {
     });
   }
 
-  /**
-   * Ouvre la modale de consultation/modification d'une réservation.
-   * 
-   * @param booking La réservation cliquée
-   */
   openBookingDetails(booking: Booking): void {
     this.newBookingSelection.set(null);
     this.selectedBooking.set(booking);
   }
 
-  /**
-   * Ferme toutes les modales actives.
-   */
   closeModals(): void {
     this.selectedBooking.set(null);
     this.newBookingSelection.set(null);
   }
 
-  /**
-   * Enregistre les modifications ou la création d'une réservation.
-   * 
-   * @param bookingData Les données de la réservation
-   */
   async handleSaveBooking(bookingData: Partial<Booking>): Promise<void> {
     if (bookingData.id) {
       await this.calendarService.updateBooking(bookingData as Booking);
@@ -168,22 +147,52 @@ export class CalendarTimelineComponent implements OnInit {
     this.closeModals();
   }
 
-  /**
-   * Supprime la réservation identifiée.
-   * 
-   * @param bookingId Identifiant UUID de la réservation
-   */
   async handleDeleteBooking(bookingId: string): Promise<void> {
     await this.calendarService.deleteBooking(bookingId);
     this.closeModals();
   }
 
+  /* ==========================================================================
+     6. SYNCHRONISATION ICAL ET CALCULS VISUELS
+     ========================================================================== */
+
+  private async syncIcalEvents(properties: any[]): Promise<void> {
+    const generatedBookings: Booking[] = [];
+
+    for (const property of properties) {
+      const units: Unit[] = property.units || [];
+      
+      for (const unit of units) {
+        if (unit.airbnb_ical_url || unit.booking_ical_url || unit.other_ical_url) {
+          try {
+            const events: IcalEvent[] = await this.icalService.getUnitEvents(unit);
+
+            for (const event of events) {
+              const channelValue = (event.source as BookingChannel) || 'other';
+
+              generatedBookings.push({
+                id: `ical-${event.uid}`,
+                unit_id: unit.id,
+                guest_name: event.summary || 'Réservation iCal',
+                check_in: formatDateToIso(event.start_date),
+                check_out: formatDateToIso(event.end_date),
+                status: 'confirmed',
+                channel: channelValue,
+                source: event.source || 'ical'
+              } as unknown as Booking);
+            }
+          } catch (err: unknown) {
+            console.error(`[CalendarTimeline] Erreur synchro iCal pour le logement ${unit.id}:`, err);
+          }
+        }
+      }
+    }
+
+    this.icalBookings.set(generatedBookings);
+  }
+
   /**
-   * Calcule le positionnement relatif (% left/width et colonnes) 
-   * des réservations d'un logement pour l'affichage visuel sur la grille.
-   * 
-   * @param unitId Identifiant du logement
-   * @returns Liste des segments de réservations calculés
+   * Calcule le positionnement relatif des réservations pour toutes les vues (Jour, Semaine, Mois).
    */
   private getUnitBookings(unitId: string): RenderedBooking[] {
     const cols = this.timeColumns();
@@ -197,25 +206,56 @@ export class CalendarTimelineComponent implements OnInit {
     const rendered: RenderedBooking[] = [];
 
     for (const b of unitBookings) {
-      if (b.check_out < rangeStart || b.check_in > rangeEnd) continue;
+      // Exclure si la réservation est strictement hors du champ de vision
+      if (b.check_out <= rangeStart || b.check_in > rangeEnd) continue;
 
       const startIdx = cols.findIndex((c: TimeColumn) => c.dateStr === b.check_in);
-      const effectiveStartIdx = startIdx !== -1 ? startIdx : 0;
-
       const endIdx = cols.findIndex((c: TimeColumn) => c.dateStr === b.check_out);
-      const effectiveEndIdx = endIdx !== -1 ? endIdx : totalDays - 1;
 
-      const durationDays = Math.max(1, effectiveEndIdx - effectiveStartIdx + 1);
+      // CAS SPÉCIAL : Vue 1 seul jour ("Jour")
+      if (totalDays === 1) {
+        const isCheckIn = b.check_in === rangeStart;
+        const isCheckOut = b.check_out === rangeStart;
 
-      const leftPercent = (effectiveStartIdx / totalDays) * 100;
-      const widthPercent = (durationDays / totalDays) * 100;
+        let leftPercent = 0;
+        let widthPercent = 100;
+
+        if (isCheckIn && !isCheckOut) {
+          leftPercent = 50;
+          widthPercent = 50;
+        } else if (isCheckOut && !isCheckIn) {
+          leftPercent = 0;
+          widthPercent = 50;
+        }
+
+        rendered.push({
+          booking: b,
+          leftPercent,
+          widthPercent,
+          startCol: 0,
+          spanCols: 1
+        });
+        continue;
+      }
+
+      // CAS GÉNÉRAL : Vues multi-jours
+      // 1. Début : +0.5 si le Check-in est dans le champ, sinon 0 (bords gauche)
+      const startOffset = startIdx !== -1 ? startIdx + 0.5 : 0;
+
+      // 2. Fin : +0.5 si le Check-out est dans le champ (départ à midi), sinon totalDays (bord droit)
+      const endOffset = endIdx !== -1 ? endIdx + 0.5 : totalDays;
+
+      const durationCols = Math.max(0.1, endOffset - startOffset);
+
+      const leftPercent = (startOffset / totalDays) * 100;
+      const widthPercent = (durationCols / totalDays) * 100;
 
       rendered.push({
         booking: b,
         leftPercent,
         widthPercent,
-        startCol: effectiveStartIdx,
-        spanCols: durationDays
+        startCol: startIdx !== -1 ? startIdx : 0,
+        spanCols: Math.ceil(durationCols)
       });
     }
 

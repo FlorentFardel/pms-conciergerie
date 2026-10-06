@@ -1,0 +1,169 @@
+/**
+ * @file sync.scss
+ * @module Features/Units/Components/UnitIcalSync
+ * @description Styles SCSS pour le composant de synchronisation et de test des flux iCal.
+ */
+
+$color-primary: #2563eb;
+$color-text-main: #0f172a;
+$color-text-muted: #64748b;
+$color-border: #cbd5e1;
+
+.ical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $color-text-main;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid $color-border;
+    border-radius: 6px;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    &.readonly-input {
+      background-color: #f8fafc;
+      color: $color-text-muted;
+    }
+  }
+}
+
+.export-box {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 1rem;
+  border-radius: 8px;
+
+  h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e40af;
+  }
+
+  p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.8rem;
+    color: #1e3a8a;
+  }
+
+  .export-link-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.events-summary {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border: 1px solid $color-border;
+  border-radius: 8px;
+
+  h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: $color-text-main;
+  }
+
+  .events-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .event-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.75rem;
+    background-color: #ffffff;
+    border: 1px solid $color-border;
+    border-radius: 6px;
+    font-size: 0.85rem;
+
+    .source-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      background-color: #f1f5f9;
+      color: $color-text-muted;
+
+      &.airbnb {
+        background-color: #ffe4e6;
+        color: #e11d48;
+      }
+
+      &.booking {
+        background-color: #dbeafe;
+        color: #1e40af;
+      }
+    }
+
+    .event-title {
+      font-weight: 600;
+      color: $color-text-main;
+      flex: 1;
+      margin: 0 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-dates {
+      color: $color-text-muted;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &.alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  &.alert-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}

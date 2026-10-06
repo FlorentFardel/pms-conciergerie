@@ -1,0 +1,101 @@
+<app-ui-card title="Configuration des flux iCal (Airbnb / Booking)">
+  
+  <form [formGroup]="syncForm" (ngSubmit)="onSubmit()" class="ical-form">
+    
+    <!-- Champ Airbnb -->
+    <div class="form-group">
+      <label for="airbnbUrl">Lien iCal Airbnb (Importation)</label>
+      <input 
+        id="airbnbUrl"
+        type="url" 
+        class="form-control" 
+        formControlName="airbnb_ical_url" 
+        placeholder="https://www.airbnb.com/calendar/ical/..."
+      />
+    </div>
+
+    <!-- Champ Booking.com -->
+    <div class="form-group">
+      <label for="bookingUrl">Lien iCal Booking.com (Importation)</label>
+      <input 
+        id="bookingUrl"
+        type="url" 
+        class="form-control" 
+        formControlName="booking_ical_url" 
+        placeholder="https://admin.booking.com/hotel/hoteladmin/ical.html..."
+      />
+    </div>
+
+    <!-- Champ Autre plateforme (VRBO, Abritel, etc.) -->
+    <div class="form-group">
+      <label for="otherUrl">Autre lien iCal (VRBO, Abritel...)</label>
+      <input 
+        id="otherUrl"
+        type="url" 
+        class="form-control" 
+        formControlName="other_ical_url" 
+        placeholder="https://..."
+      />
+    </div>
+
+    <!-- Message d'information sur le lien d'exportation PMS -->
+    <div class="export-box">
+      <h4>Lien d'exportation de votre calendrier PMS</h4>
+      <p>Collez ce lien sur Airbnb/Booking pour leur transmettre vos dates d'occupation :</p>
+      <div class="export-link-row">
+        <input type="text" readonly [value]="exportIcalUrl" class="form-control readonly-input" />
+        <app-ui-button type="button" variant="secondary" size="sm" (clicked)="copyExportUrl()">
+          Copier
+        </app-ui-button>
+      </div>
+    </div>
+
+    <!-- Feedback visuel -->
+    @if (successMessage()) {
+      <div class="alert alert-success">{{ successMessage() }}</div>
+    }
+    @if (errorMessage()) {
+      <div class="alert alert-error">{{ errorMessage() }}</div>
+    }
+
+    <!-- RÉSULTATS DU TEST DE SYNCHRONISATION -->
+    @if (fetchedEvents().length > 0) {
+      <div class="events-summary">
+        <h4>Réservations / Indisponibilités détectées ({{ fetchedEvents().length }})</h4>
+        <ul class="events-list">
+          @for (event of fetchedEvents(); track event.uid) {
+            <li class="event-item">
+              <span class="source-badge" [class]="event.source">{{ event.source || 'iCal' }}</span>
+              <span class="event-title">{{ event.summary }}</span>
+              <span class="event-dates">
+                {{ event.start_date | date:'dd/MM/yyyy' }} → {{ event.end_date | date:'dd/MM/yyyy' }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <app-ui-button 
+        type="button" 
+        variant="secondary" 
+        [disabled]="testingSync() || syncForm.invalid"
+        (clicked)="testSync()"
+      >
+        {{ testingSync() ? 'Synchronisation...' : 'Tester la synchronisation' }}
+      </app-ui-button>
+
+      <app-ui-button 
+        type="submit" 
+        variant="primary" 
+        [disabled]="loading() || syncForm.invalid"
+      >
+        {{ loading() ? 'Enregistrement...' : 'Enregistrer la configuration' }}
+      </app-ui-button>
+    </div>
+
+  </form>
+
+</app-ui-card>

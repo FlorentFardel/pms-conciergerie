@@ -2,7 +2,7 @@ import { Property } from '../../properties/models/property';
 
 /**
  * @file unit.ts
- * @description Modèles de données, interfaces et DTOs pour le module des logements (Units).
+ * @description Modèles de données, interfaces et DTOs pour le module des logements (Units) avec support des flux iCal.
  */
 
 /**
@@ -44,6 +44,15 @@ export interface Unit {
   property?: Property;
   /** Horodatage de création au format ISO */
   created_at: string;
+
+  /** URL d'importation du flux iCal Airbnb */
+  airbnb_ical_url?: string;
+  /** URL d'importation du flux iCal Booking.com */
+  booking_ical_url?: string;
+  /** URL d'importation du flux iCal d'une autre plateforme (VRBO, Abritel...) */
+  other_ical_url?: string;
+  /** Horodatage ISO de la dernière synchronisation réussie */
+  last_sync_at?: string;
 }
 
 /**
@@ -67,6 +76,12 @@ export interface CreateUnitDto {
   is_occupied?: boolean;
   status?: string;
   notes?: string;
+
+  /** Liens iCal configurables à la création */
+  airbnb_ical_url?: string;
+  booking_ical_url?: string;
+  other_ical_url?: string;
+
   /** Signature d'index pour tolérer d'éventuels champs spécifiques du formulaire */
   [key: string]: unknown;
 }
@@ -92,4 +107,5 @@ export interface BulkCreateUnitsDto {
  */
 export type UpdateUnitDto = Partial<Omit<CreateUnitDto, 'property_id'>> & {
   is_active?: boolean;
+  last_sync_at?: string;
 };

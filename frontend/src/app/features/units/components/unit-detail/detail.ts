@@ -6,12 +6,13 @@ import { UiCardComponent } from '../../../../shared/components/ui-card/modal';
 import { UiInfoRowComponent } from '../../../../shared/components/ui-info-row/modal';
 import { UiButtonComponent } from '../../../../shared/components/ui-button/modal';
 import { UnitModalComponent } from '../unit-modal/modal';
+import { UnitIcalSyncComponent } from '../unit-ical-sync/sync';
 
 /**
  * @file detail.ts
  * @module Features/Units/Components/UnitDetail
- * @description Vue détaillée d'un logement (Unit) avec navigation par onglets métiers, modale d'édition et suppression sécurisée.
- * @architecture Enterprise Pattern - Smart Detail View
+ * @description Vue détaillée d'un logement (Unit) avec navigation par onglets métiers, modale d'édition, synchronisation iCal et suppression sécurisée.
+ * @architecture Enterprise Pattern - Smart Detail View Container
  */
 @Component({
   selector: 'app-unit-detail',
@@ -21,52 +22,97 @@ import { UnitModalComponent } from '../unit-modal/modal';
     UiCardComponent,
     UiInfoRowComponent,
     UiButtonComponent,
-    UnitModalComponent
+    UnitModalComponent,
+    UnitIcalSyncComponent
   ],
   templateUrl: './detail.html',
   styleUrl: './detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UnitDetailComponent implements OnInit {
-  /** Service métier d'accès aux données des logements */
-  private readonly unitService: UnitService = inject(UnitService);
-
-  /** Identifiant du logement sélectionné */
-  readonly unitId = input<string | null>(null);
-
-  /** Événement émis lors du retour à la liste */
-  readonly back = output<void>();
-
-  /** 🎯 Événement émis après la suppression réussie d'un logement */
-  readonly deleted = output<void>();
-
-  /** Signal d'état du logement chargé */
-  readonly unit: WritableSignal<Unit | null> = signal<Unit | null>(null);
-
-  /** Signal de chargement réseau */
-  readonly loading: WritableSignal<boolean> = signal<boolean>(true);
-
-  /** Signal de message d'erreur */
-  readonly error: WritableSignal<string | null> = signal<string | null>(null);
-
-  /** Onglet actif ('overview' | 'sync' | 'checklists' | 'billing' | 'welcome') */
-  readonly activeTab: WritableSignal<string> = signal<string>('overview');
-
-  /** Contrôle de l'affichage de la modale d'édition */
-  readonly showModal: WritableSignal<boolean> = signal<boolean>(false);
+  /* ==========================================================================
+     1. INJECTION DES SERVICES
+     ========================================================================== */
 
   /**
-   * Cycle de vie Angular : Initialisation et chargement des détails du logement.
+   * Service métier centralisé pour la gestion des logements.
+   * @private
+   */
+  private readonly unitService: UnitService = inject(UnitService);
+
+  /* ==========================================================================
+     2. ENTRÉES / SORTIES DU COMPOSANT (SIGNALS & OUTPUTS)
+     ========================================================================== */
+
+  /**
+   * Identifiant UUID du logement sélectionné.
+   * @input
+   */
+  readonly unitId = input<string | null>(null);
+
+  /**
+   * Événement émis lors du clic sur le bouton de retour à la liste.
+   * @output
+   */
+  readonly back = output<void>();
+
+  /**
+   * Événement émis après la suppression réussie du logement.
+   * @output
+   */
+  readonly deleted = output<void>();
+
+  /* ==========================================================================
+     3. ÉTATS ET SIGNAUX REACTIFS
+     ========================================================================== */
+
+  /**
+   * Signal réactif hébergeant l'objet logement actuellement chargé.
+   */
+  readonly unit: WritableSignal<Unit | null> = signal<Unit | null>(null);
+
+  /**
+   * Signal de chargement indiquant si une requête HTTP est en cours.
+   */
+  readonly loading: WritableSignal<boolean> = signal<boolean>(true);
+
+  /**
+   * Signal contenant le message d'erreur éventuel à afficher.
+   */
+  readonly error: WritableSignal<string | null> = signal<string | null>(null);
+
+  /**
+   * Onglet métier actuellement actif ('overview' | 'sync' | 'checklists' | 'billing' | 'welcome').
+   */
+  readonly activeTab: WritableSignal<string> = signal<string>('overview');
+
+  /**
+   * Signal contrôlant l'ouverture et la fermeture de la modale d'édition.
+   */
+  readonly showModal: WritableSignal<boolean> = signal<boolean>(false);
+
+  /* ==========================================================================
+     4. CYCLE DE VIE
+     ========================================================================== */
+
+  /**
+   * Initialise le composant et déclenche le chargement des détails du logement.
    * 
+   * @async
    * @returns {Promise<void>}
    */
   async ngOnInit(): Promise<void> {
     await this.loadUnit();
   }
 
+  /* ==========================================================================
+     5. MÉTHODES ET GESTION DES DONNÉES
+     ========================================================================== */
+
   /**
-   * Recharge les données du logement depuis le backend.
+   * Récupère les données à jour du logement depuis le service.
    * 
+   * @async
    * @returns {Promise<void>}
    */
   async loadUnit(): Promise<void> {
@@ -88,9 +134,9 @@ export class UnitDetailComponent implements OnInit {
   }
 
   /**
-   * Modifie l'onglet métier actif.
+   * Modifie l'onglet métier affiché dans le panneau de détail.
    * 
-   * @param {string} tab - Identifiant de l'onglet.
+   * @param {string} tab - Identifiant de l'onglet cible.
    * @returns {void}
    */
   setTab(tab: string): void {
@@ -98,7 +144,7 @@ export class UnitDetailComponent implements OnInit {
   }
 
   /**
-   * Ouvre la modale d'édition.
+   * Déclenche l'ouverture de la modale d'édition du logement.
    * 
    * @returns {void}
    */
@@ -107,7 +153,7 @@ export class UnitDetailComponent implements OnInit {
   }
 
   /**
-   * Déclenche l'événement de retour vers la liste des logements.
+   * Déclenche le retour vers la liste globale des logements.
    * 
    * @returns {void}
    */
@@ -116,8 +162,9 @@ export class UnitDetailComponent implements OnInit {
   }
 
   /**
-   * Demande la suppression sécurisée du logement avec confirmation préalable.
+   * Exécute la suppression définitive du logement après confirmation utilisateur.
    * 
+   * @async
    * @returns {Promise<void>}
    */
   async deleteUnit(): Promise<void> {
@@ -138,9 +185,10 @@ export class UnitDetailComponent implements OnInit {
   }
 
   /**
-   * Gère la fermeture et le rafraîchissement après édition.
+   * Ferme la modale d'édition et recharge les informations du logement si nécessaire.
    * 
-   * @param {boolean} shouldRefresh - Recharger les données si vrai.
+   * @async
+   * @param {boolean} [shouldRefresh=false] - Indique si un rafraîchissement des données est requis.
    * @returns {Promise<void>}
    */
   async onModalClosed(shouldRefresh: boolean = false): Promise<void> {

@@ -42,6 +42,8 @@ export function shiftDate(date: Date, viewMode: ViewMode, direction: number): Da
   const result = new Date(date);
   if (viewMode === 'month') {
     result.setMonth(result.getMonth() + direction);
+  } else if (viewMode === 'day') {
+    result.setDate(result.getDate() + direction);
   } else if (viewMode === 'week' || viewMode === '2weeks') {
     const days = viewMode === 'week' ? 7 : 14;
     result.setDate(result.getDate() + direction * days);
@@ -59,12 +61,26 @@ export function buildTimeColumns(viewMode: ViewMode, currentDate: Date): TimeCol
   let startDate: Date;
   let totalDays: number;
 
-  if (viewMode === 'month') {
-    startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    totalDays = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  } else {
-    startDate = new Date(currentDate);
-    totalDays = viewMode === 'week' ? 7 : 14;
+  switch (viewMode) {
+    case 'day':
+      startDate = new Date(currentDate);
+      totalDays = 1;
+      break;
+    case 'week':
+      startDate = new Date(currentDate);
+      totalDays = 7;
+      break;
+    case '2weeks':
+      startDate = new Date(currentDate);
+      totalDays = 14;
+      break;
+    case 'month':
+      startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      totalDays = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+      break;
+    default:
+      startDate = new Date(currentDate);
+      totalDays = 7;
   }
 
   for (let i = 0; i < totalDays; i++) {

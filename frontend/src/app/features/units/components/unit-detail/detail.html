@@ -46,7 +46,7 @@
     <!-- CONTENU DE L'ONGLET SÉLECTIONNÉ -->
     <main class="tab-content">
 
-      <!-- ONGLET 1 : INFORMATIONS GÉNÉRALES (UN SEUL BLOC UNIQUE) -->
+      <!-- ONGLET 1 : INFORMATIONS GÉNÉRALES -->
       @if (activeTab() === 'overview') {
         <app-ui-card title="Informations Générales">
           
@@ -78,7 +78,7 @@
             </app-ui-info-row>
           </div>
 
-          <!-- ZONE SENSIPLE EN BAS DE CARTE (FIN DU CONTENU) -->
+          <!-- ZONE SENSIBLE EN BAS DE CARTE -->
           <div class="danger-zone">
             <h4>Zone sensible</h4>
             <p class="danger-description">
@@ -95,10 +95,12 @@
         </app-ui-card>
       }
 
+      <!-- ONGLET 2 : SYNCHRONISATION ICAL (AIRBNB / BOOKING / AUTRES) -->
       @if (activeTab() === 'sync') {
-        <app-ui-card title="Synchronisation des plateformes">
-          <p class="placeholder-text">Paramétrez ici la connexion avec vos comptes Airbnb et Booking.com.</p>
-        </app-ui-card>
+        <app-unit-ical-sync 
+          [unit]="unit()!"
+          (updated)="loadUnit()"
+        ></app-unit-ical-sync>
       }
 
       @if (activeTab() === 'checklists') {
