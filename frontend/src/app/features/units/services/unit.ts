@@ -4,9 +4,11 @@ import { firstValueFrom } from 'rxjs';
 import { Unit, CreateUnitDto, BulkCreateUnitsDto, UpdateUnitDto } from '../models/unit';
 
 /**
- * @service UnitService
- * @description Service Angular centralisé pour la gestion des logements.
- * Assure la communication avec l'API REST HTTP et la gestion de l'état réactif via Signals.
+ * @file unit.ts
+ * @module Features/Units/Services/UnitService
+ * @description Service Angular centralisé pour la gestion des logements (Units).
+ * Assure la communication avec l'API REST HTTP, la manipulation métier des données et la gestion de l'état réactif via Signals.
+ * @architecture Enterprise Pattern - Service Layer
  */
 @Injectable({
   providedIn: 'root'
@@ -28,10 +30,29 @@ export class UnitService {
   readonly error = signal<string | null>(null);
 
   /**
+   * @method sortUnits
+   * @description Traitement métier : Applique un tri alphanumérique naturel sur le champ `unit_number`
+   * (ex: 1, 2, 3... 10, 11, 101).
+   * @param {Unit[]} unitsList - Liste brute de logements à ordonner.
+   * @returns {Unit[]} Nouvelle liste de logements ordonnée.
+   */
+  sortUnits(unitsList: Unit[]): Unit[] {
+    return [...unitsList].sort((a: Unit, b: Unit) => {
+      const numA: string = a.unit_number ?? '';
+      const numB: string = b.unit_number ?? '';
+
+      return numA.localeCompare(numB, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    });
+  }
+
+  /**
    * @method getUnits
    * @description Récupère la liste des logements, optionnellement filtrée par propriété.
    * @param {string} [propertyId] - Identifiant UUID optionnel de la propriété parente.
-   * @returns {Promise<Unit[]>} Liste des logements récupérés.
+   * @returns {Promise<Unit[]>} Liste des logements récupérés et triés.
    */
   async getUnits(propertyId?: string): Promise<Unit[]> {
     this.loading.set(true);
@@ -39,8 +60,9 @@ export class UnitService {
     try {
       const url = propertyId ? `${this.apiUrl}?propertyId=${propertyId}` : this.apiUrl;
       const data = await firstValueFrom(this.http.get<Unit[]>(url));
-      this.units.set(data);
-      return data;
+      const sortedData = this.sortUnits(data);
+      this.units.set(sortedData);
+      return sortedData;
     } catch (err: unknown) {
       const msg = this.extractErrorMessage(err, 'Erreur lors de la récupération des logements.');
       this.error.set(msg);
@@ -72,16 +94,16 @@ export class UnitService {
 
   /**
    * @method createUnit
-   * @description Enregistre un nouveau logement individuel via l'API.
+   * @description Enregistre un nouveau logement individuel via l'API REST.
    * @param {CreateUnitDto} dto - Données de création du logement.
-   * @returns {Promise<Unit>}
+   * @returns {Promise<Unit>} Le logement créé.
    */
   async createUnit(dto: CreateUnitDto): Promise<Unit> {
     this.loading.set(true);
     this.error.set(null);
     try {
       const newUnit = await firstValueFrom(this.http.post<Unit>(this.apiUrl, dto));
-      this.units.update(list => [...list, newUnit]);
+      this.units.update(list => this.sortUnits([...list, newUnit]));
       return newUnit;
     } catch (err: unknown) {
       const msg = this.extractErrorMessage(err, 'Erreur lors de la création du logement.');
@@ -94,8 +116,7 @@ export class UnitService {
 
   /**
    * @method bulkCreateUnits
-   * @description Crée plusieurs logements pour un même bâtiment via des requêtes individuelles exécutées en parallèle.
-   * Gère à la fois les tableaux explicites et les commandes basées sur un nombre (count, prefix, etc.).
+   * @description Crée plusieurs logements pour un même bâtiment via des requêtes exécutées en parallèle.
    * @param {BulkCreateUnitsDto | any} dto - Données de création par lots.
    * @returns {Promise<Unit[]>} Liste des logements créés.
    */
@@ -108,16 +129,13 @@ export class UnitService {
       const parentPropertyId: string = rawDto['property_id'] || rawDto['propertyId'];
       let unitsToCreate: CreateUnitDto[] = [];
 
-      // Case 1: Un tableau explicite de logements est fourni
       if (Array.isArray(rawDto['units'])) {
         unitsToCreate = rawDto['units'];
       } else if (Array.isArray(rawDto['items'])) {
         unitsToCreate = rawDto['items'];
       } else if (Array.isArray(dto)) {
         unitsToCreate = dto;
-      } 
-      // Case 2: Une demande de génération par lot (count, prefix, etc.)
-      else if (typeof rawDto['count'] === 'number' && rawDto['count'] > 0) {
+      } else if (typeof rawDto['count'] === 'number' && rawDto['count'] > 0) {
         const count: number = rawDto['count'];
         const prefix: string = rawDto['prefix'] || 'Logement';
         const startIndex: number = rawDto['start_index'] || rawDto['startIndex'] || 1;
@@ -144,11 +162,9 @@ export class UnitService {
       }
 
       if (unitsToCreate.length === 0) {
-        console.warn('UnitService.bulkCreateUnits: Aucun logement à générer.', dto);
         return [];
       }
 
-      // Envoi de tous les logements en parallèle vers l'API POST /api/units
       const promises = unitsToCreate.map((unitDto: CreateUnitDto) => {
         const payload = {
           ...unitDto,
@@ -158,9 +174,7 @@ export class UnitService {
       });
 
       const createdUnits: Unit[] = await Promise.all(promises);
-
-      // Mise à jour de la liste réactive
-      this.units.update(list => [...list, ...createdUnits]);
+      this.units.update(list => this.sortUnits([...list, ...createdUnits]));
       return createdUnits;
 
     } catch (err: unknown) {
@@ -186,7 +200,7 @@ export class UnitService {
       const updated = await firstValueFrom(
         this.http.put<Unit>(`${this.apiUrl}/${id}`, dto)
       );
-      this.units.update(list => list.map(u => u.id === id ? updated : u));
+      this.units.update(list => this.sortUnits(list.map(u => u.id === id ? updated : u)));
       return updated;
     } catch (err: unknown) {
       const msg = this.extractErrorMessage(err, 'Erreur lors de la mise à jour du logement.');

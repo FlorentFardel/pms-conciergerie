@@ -10,7 +10,8 @@ import { UnitModalComponent } from '../unit-modal/modal';
 /**
  * @file detail.ts
  * @module Features/Units/Components/UnitDetail
- * @description Vue détaillée d'un logement (Unit) avec navigation par onglets métiers et modale d'édition.
+ * @description Vue détaillée d'un logement (Unit) avec navigation par onglets métiers, modale d'édition et suppression sécurisée.
+ * @architecture Enterprise Pattern - Smart Detail View
  */
 @Component({
   selector: 'app-unit-detail',
@@ -27,14 +28,17 @@ import { UnitModalComponent } from '../unit-modal/modal';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UnitDetailComponent implements OnInit {
-  /** Service d'accès aux données des logements */
+  /** Service métier d'accès aux données des logements */
   private readonly unitService: UnitService = inject(UnitService);
 
-  /** Identifiant du logement sélectionné (ou objet Unit) */
+  /** Identifiant du logement sélectionné */
   readonly unitId = input<string | null>(null);
 
   /** Événement émis lors du retour à la liste */
   readonly back = output<void>();
+
+  /** 🎯 Événement émis après la suppression réussie d'un logement */
+  readonly deleted = output<void>();
 
   /** Signal d'état du logement chargé */
   readonly unit: WritableSignal<Unit | null> = signal<Unit | null>(null);
@@ -53,6 +57,7 @@ export class UnitDetailComponent implements OnInit {
 
   /**
    * Cycle de vie Angular : Initialisation et chargement des détails du logement.
+   * 
    * @returns {Promise<void>}
    */
   async ngOnInit(): Promise<void> {
@@ -61,6 +66,7 @@ export class UnitDetailComponent implements OnInit {
 
   /**
    * Recharge les données du logement depuis le backend.
+   * 
    * @returns {Promise<void>}
    */
   async loadUnit(): Promise<void> {
@@ -83,6 +89,7 @@ export class UnitDetailComponent implements OnInit {
 
   /**
    * Modifie l'onglet métier actif.
+   * 
    * @param {string} tab - Identifiant de l'onglet.
    * @returns {void}
    */
@@ -92,6 +99,7 @@ export class UnitDetailComponent implements OnInit {
 
   /**
    * Ouvre la modale d'édition.
+   * 
    * @returns {void}
    */
   openEditModal(): void {
@@ -100,6 +108,7 @@ export class UnitDetailComponent implements OnInit {
 
   /**
    * Déclenche l'événement de retour vers la liste des logements.
+   * 
    * @returns {void}
    */
   goBack(): void {
@@ -107,7 +116,30 @@ export class UnitDetailComponent implements OnInit {
   }
 
   /**
+   * Demande la suppression sécurisée du logement avec confirmation préalable.
+   * 
+   * @returns {Promise<void>}
+   */
+  async deleteUnit(): Promise<void> {
+    const currentUnit = this.unit();
+    if (!currentUnit) return;
+
+    const confirmation = confirm(`Voulez-vous vraiment supprimer définitivement le logement ${currentUnit.unit_number} ?`);
+    if (!confirmation) return;
+
+    try {
+      await this.unitService.deleteUnit(currentUnit.id);
+      this.deleted.emit();
+      this.goBack();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur lors de la suppression du logement.';
+      this.error.set(msg);
+    }
+  }
+
+  /**
    * Gère la fermeture et le rafraîchissement après édition.
+   * 
    * @param {boolean} shouldRefresh - Recharger les données si vrai.
    * @returns {Promise<void>}
    */

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -19,8 +19,9 @@ import { UnitModalComponent } from '../../../units/components/unit-modal/modal';
 /**
  * @file list.ts
  * @module Features/Properties/Components/PropertiesList
- * @description Composant conteneur principal gérant l'affichage de la grille du parc immobilier,
- * la délégation vers le détail d'une propriété et la gestion des modales associées.
+ * @description Composant conteneur principal gérant l'affichage du parc immobilier,
+ * la délégation vers le détail d'une propriété et l'orchestration des modales.
+ * @architecture Enterprise Pattern - Container Component (Smart)
  */
 @Component({
   selector: 'app-properties-list',
@@ -33,83 +34,65 @@ import { UnitModalComponent } from '../../../units/components/unit-modal/modal';
     UnitModalComponent
   ],
   templateUrl: './list.html',
-  styleUrl: './list.scss'
+  styleUrl: './list.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PropertiesListComponent implements OnInit {
   /* ==========================================================================
-     1. INJECTION DES SERVICES ET ROUTAGE
+     1. INJECTION DES SERVICES
      ========================================================================== */
 
-  /** Service métier d'accès aux propriétés BDD */
+  /** Service métier centralisé d'accès au parc immobilier */
   readonly propertyService: PropertyService = inject(PropertyService);
   
-  /** Service d'accès aux paramètres de la route courante */
+  /** Service d'accès à la route active */
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
 
-  /** Service de navigation Angular Router */
+  /** Service de navigation Angular */
   private readonly router: Router = inject(Router);
 
   /* ==========================================================================
-     2. GESTION DES ÉTATS ET SIGNAUX (REACTIVITY)
+     2. SIGNAUX ET ÉTATS DU COMPOSANT
      ========================================================================== */
 
-  /** 
-   * Visibilité de la modale de création/édition de propriété 
-   * @type {WritableSignal<boolean>}
-   */
+  /** Visibilité de la modale de création/édition de propriété */
   readonly showModal = signal<boolean>(false);
 
-  /** 
-   * Visibilité de la modale de création complète d'un logement 
-   * @type {WritableSignal<boolean>}
-   */
+  /** Visibilité de la modale de création d'un logement */
   readonly showUnitModal = signal<boolean>(false);
 
-  /** 
-   * Propriété actuellement sélectionnée pour édition 
-   * @type {WritableSignal<Property | null>}
-   */
+  /** Propriété actuellement sélectionnée pour édition */
   readonly selectedProperty = signal<Property | null>(null);
 
-  /** 
-   * Propriété cible pour la création d'un nouveau logement 
-   * @type {WritableSignal<Property | null>}
-   */
+  /** Propriété cible pour la création d'un nouveau logement */
   readonly selectedPropertyForUnit = signal<Property | null>(null);
 
-  /** 
-   * Identifiant unique (UUID) de la propriété active extrait de l'URL 
-   * @type {WritableSignal<string | null>}
-   */
+  /** Identifiant unique (UUID) de la propriété active extrait de l'URL */
   readonly activePropertyId = signal<string | null>(null);
 
-  /** 
-   * Message d'erreur d'opération sur la modale de propriété 
-   * @type {WritableSignal<string | null>}
-   */
+  /** Message d'erreur local à la modale de propriété */
   readonly modalError = signal<string | null>(null);
 
   /* ==========================================================================
-     3. CYCLE DE VIE ET INITIALISATION
+     3. CYCLE DE VIE ET RAFRAÎCHISSEMENT
      ========================================================================== */
 
   /**
-   * Cycle de vie Angular : Initialisation du composant.
-   * Charge la liste des propriétés et écoute l'identifiant dans la route.
+   * Initialise le composant en chargeant les propriétés et en observant l'URL.
    * 
    * @returns {Promise<void>}
    */
   async ngOnInit(): Promise<void> {
     await this.refreshProperties();
 
-    this.route.paramMap.subscribe(params => {
-      const propertyId = params.get('propertyId') || params.get('id');
-      this.activePropertyId.set(propertyId);
+    this.route.paramMap.subscribe((params) => {
+      this.activePropertyId.set(params.get('propertyId') || params.get('id'));
     });
   }
 
   /**
-   * Recharge la liste globale des propriétés depuis le backend PostgreSQL.
+   * Recharge l'ensemble du parc immobilier depuis le backend.
+   * Répond à l'événement (refresh) émis par le template HTML.
    * 
    * @returns {Promise<void>}
    */
@@ -118,22 +101,21 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /* ==========================================================================
-     4. NAVIGATION ET SÉLECTION
+     4. NAVIGATION
      ========================================================================== */
 
   /**
- * Redirige l'utilisateur vers la vue détaillée d'une propriété en utilisant son slug (ou son UUID en secours).
- * 
- * @param {Property} prop Propriété cible sélectionnée.
- * @returns {void}
- */
+   * Redirige vers le détail d'une propriété via son slug ou son identifiant.
+   * 
+   * @param {Property} prop - Propriété cible.
+   * @returns {void}
+   */
   onSelectProperty(prop: Property): void {
-    const target = prop.slug || prop.id;
-    this.router.navigate(['/properties', target]);
+    this.router.navigate(['/properties', prop.slug || prop.id]);
   }
 
   /**
-   * Ferme la vue détaillée d'une propriété et revient à la liste globale.
+   * Reviens à la vue liste globale des propriétés.
    * 
    * @returns {void}
    */
@@ -142,11 +124,11 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /* ==========================================================================
-     5. MODALE DE CRÉATION / ÉDITION DE PROPRIÉTÉ
+     5. GESTION DES MODALES PROPRIÉTÉ
      ========================================================================== */
 
   /**
-   * Ouvre la modale en mode création.
+   * Ouvre la modale en mode création d'une nouvelle propriété.
    * 
    * @returns {void}
    */
@@ -159,7 +141,7 @@ export class PropertiesListComponent implements OnInit {
   /**
    * Ouvre la modale en mode édition pour une propriété donnée.
    * 
-   * @param {Property} prop Propriété à éditer
+   * @param {Property} prop - Propriété à modifier.
    * @returns {void}
    */
   openEditModal(prop: Property): void {
@@ -169,7 +151,7 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /**
-   * Ferme la modale de propriété et réinitialise les erreurs.
+   * Ferme la modale de propriété et purge les messages d'erreur.
    * 
    * @returns {void}
    */
@@ -180,20 +162,16 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /**
-   * Enregistre la création ou la modification d'une propriété en BDD.
+   * Valide et enregistre la création ou modification d'une propriété.
    * 
-   * @param {CreatePropertyDto} formData Données saisies dans le formulaire
+   * @param {CreatePropertyDto} formData - Données transmises par le formulaire.
    * @returns {Promise<void>}
    */
   async handleSaveProperty(formData: CreatePropertyDto): Promise<void> {
     this.modalError.set(null);
     const currentProp = this.selectedProperty();
 
-    const isDuplicate = this.propertyService.properties().some(
-      (p: Property) => p.name.trim().toLowerCase() === formData.name.trim().toLowerCase() && p.id !== currentProp?.id
-    );
-
-    if (isDuplicate) {
+    if (this.propertyService.isPropertyNameTaken(formData.name, currentProp?.id)) {
       this.modalError.set('Une propriété portant ce nom existe déjà.');
       return;
     }
@@ -213,9 +191,9 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /**
-   * Supprime une propriété en base de données.
+   * Supprime une propriété après confirmation.
    * 
-   * @param {string} id Identifiant UUID de la propriété
+   * @param {string} id - Identifiant UUID de la propriété.
    * @returns {Promise<void>}
    */
   async deleteProperty(id: string): Promise<void> {
@@ -226,13 +204,13 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /* ==========================================================================
-     6. MODALE DE CRÉATION DE LOGEMENT
+     6. GESTION DE LA MODALE LOGEMENT
      ========================================================================== */
 
   /**
-   * Ouvre la modale de création d'un logement rattaché à une propriété.
+   * Ouvre la modale pour ajouter un logement au sein d'une propriété.
    * 
-   * @param {Property} property Propriété cible
+   * @param {Property} property - Propriété rattachée.
    * @returns {void}
    */
   openUnitModalForProperty(property: Property): void {
@@ -251,7 +229,7 @@ export class PropertiesListComponent implements OnInit {
   }
 
   /**
-   * Rafraîchit les données après la création réussie d'un logement.
+   * Traite la fin de sauvegarde d'un logement en rafraîchissant les données.
    * 
    * @returns {Promise<void>}
    */

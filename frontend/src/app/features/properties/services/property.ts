@@ -4,9 +4,11 @@ import { firstValueFrom } from 'rxjs';
 import { Property, CreatePropertyDto, UpdatePropertyDto } from '../models/property';
 
 /**
- * @service PropertyService
+ * @file property.ts
+ * @module Features/Properties/Services/PropertyService
  * @description Service Angular centralisé pour la gestion du parc immobilier (propriétés).
  * Assure la communication avec l'API HTTP REST et maintient l'état réactif global via les Signals Angular.
+ * @architecture Enterprise Pattern - Service Layer
  */
 @Injectable({
   providedIn: 'root'
@@ -73,10 +75,24 @@ export class PropertyService {
   }
 
   /**
+   * @method isPropertyNameTaken
+   * @description Règle métier centralisée : Vérifie si un nom de propriété existe déjà dans le parc local.
+   * @param {string} name - Le nom saisi à contrôler.
+   * @param {string} [excludeId] - L'identifiant de la propriété à exclure du contrôle (en cas de modification).
+   * @returns {boolean} `true` si le nom est déjà utilisé par une autre propriété, `false` sinon.
+   */
+  isPropertyNameTaken(name: string, excludeId?: string): boolean {
+    const formattedName = name.trim().toLowerCase();
+    return this.properties().some(
+      (p: Property) => p.name.trim().toLowerCase() === formattedName && p.id !== excludeId
+    );
+  }
+
+  /**
    * @method createProperty
    * @description Soumet une requête HTTP POST pour enregistrer une nouvelle propriété, puis l'ajoute en tête du signal `properties`.
-   * @param {CreatePropertyDto} property - DTO contenant les informations du bien à créer (nom, adresse, ville, code postal).
-   * @returns {Promise<Property>} La propriété créée renvoyée par le serveur backend (avec son ID et son slug générés).
+   * @param {CreatePropertyDto} property - DTO contenant les informations du bien à créer.
+   * @returns {Promise<Property>} La propriété créée renvoyée par le serveur backend.
    * @throws {Error} Si l'API renvoie un code d'erreur HTTP.
    */
   async createProperty(property: CreatePropertyDto): Promise<Property> {
@@ -145,10 +161,10 @@ export class PropertyService {
   /**
    * @method extractErrorMessage
    * @private
-   * @description Analyse une exception ou une réponse d'erreur HTTP pour en extraire un message compréhensible par l'utilisateur.
-   * @param {unknown} err - Objet d'erreur intercepté (Error Javascript, HttpErrorResponse, etc.).
-   * @param {string} defaultMsg - Message de secours par défaut en cas d'erreur indéterminée.
-   * @returns {string} Le message d'erreur formaté sous forme de chaîne de caractères.
+   * @description Analyse une exception ou une réponse d'erreur HTTP pour en extraire un message compréhensible.
+   * @param {unknown} err - Objet d'erreur intercepté.
+   * @param {string} defaultMsg - Message de secours par défaut.
+   * @returns {string} Le message d'erreur formaté.
    */
   private extractErrorMessage(err: unknown, defaultMsg: string): string {
     if (typeof err === 'object' && err !== null) {

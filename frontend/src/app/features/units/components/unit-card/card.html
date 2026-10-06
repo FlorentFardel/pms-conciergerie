@@ -9,8 +9,7 @@
     tabindex="0"
     aria-label="Ouvrir les détails du logement"
   >
-    
-    <!-- En-tête : Numéro, Nom personnalisé, Badge Type et Statut -->
+    <!-- En-tête : Numéro, Nom, Badge Type & Statut -->
     <header class="card-header">
       <div class="title-wrapper">
         <h3 class="unit-title">
@@ -22,7 +21,7 @@
         <span class="type-badge">{{ unit.type || 'Logement' }}</span>
       </div>
 
-      <!-- Interrupteur de statut individuel (is_active) -->
+      <!-- Badge de statut uniquement (pas de bouton de suppression ici) -->
       <button 
         type="button" 
         class="status-badge" 
@@ -38,8 +37,6 @@
     <!-- Corps de carte : Grille des 5 métriques clés -->
     <div class="card-body">
       <div class="metrics-grid">
-        
-        <!-- Métrique 1 : Étage -->
         <div class="metric-item">
           <span class="metric-label">Étage</span>
           <span class="metric-value">
@@ -47,36 +44,31 @@
           </span>
         </div>
 
-        <!-- Métrique 2 : Superficie -->
         <div class="metric-item">
           <span class="metric-label">Superficie</span>
           <span class="metric-value">{{ unit.surface ? unit.surface + ' m²' : '-' }}</span>
         </div>
 
-        <!-- Métrique 3 : Capacité d'accueil -->
         <div class="metric-item">
           <span class="metric-label">Capacité</span>
           <span class="metric-value">{{ unit.capacity ? unit.capacity + ' pers.' : '-' }}</span>
         </div>
 
-        <!-- Métrique 4 : Loyer Hors Charges -->
         <div class="metric-item">
           <span class="metric-label">Loyer HC</span>
           <span class="metric-value">{{ unit.rent_amount ? unit.rent_amount + ' €' : '-' }}</span>
         </div>
 
-        <!-- Métrique 5 : Charges mensuelles -->
         <div class="metric-item">
           <span class="metric-label">Charges</span>
           <span class="metric-value">
             {{ unit.charges_amount !== undefined && unit.charges_amount !== null ? unit.charges_amount + ' €' : '-' }}
           </span>
         </div>
-
       </div>
     </div>
 
-    <!-- Pied de carte : Action explicite avec app-ui-button -->
+    <!-- Pied de carte -->
     <footer class="card-footer">
       <app-ui-button 
         variant="outline" 
@@ -86,6 +78,5 @@
         Gérer le logement &rarr;
       </app-ui-button>
     </footer>
-
   </article>
 }

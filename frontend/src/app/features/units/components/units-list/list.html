@@ -8,17 +8,16 @@
     <app-unit-detail
       [unitId]="activeUnitForDetail()!.id"
       (back)="onCloseDetail()"
-      (saved)="onCloseDetail()"
+      (deleted)="onCloseDetail()"
     ></app-unit-detail>
   } 
 
-  <!-- CAS 2 : VUE LISTE AVEC CARTES (Si aucun logement n'est sélectionné) -->
+  <!-- CAS 2 : VUE LISTE AVEC CARTES (Affiche la liste uniquement quand aucun détail n'est ouvert) -->
   @else {
     <header class="header">
       <h2>Logements ({{ units().length }})</h2>
       
       <div class="actions-bar">
-        <!-- Toggle Global avec app-ui-button -->
         @if (units().length > 0) {
           <app-ui-button 
             [variant]="areAllUnitsActive() ? 'danger' : 'secondary'"
@@ -28,7 +27,6 @@
           </app-ui-button>
         }
 
-        <!-- Bouton Ajouter avec app-ui-button -->
         <app-ui-button 
           variant="primary" 
           (clicked)="openCreateModal()"
@@ -38,7 +36,6 @@
       </div>
     </header>
 
-    <!-- Bandeau de notification (Succès / Échec) -->
     @if (notificationMessage(); as notif) {
       <div class="toast-notification" [class.success]="notif.type === 'success'" [class.error]="notif.type === 'error'">
         <span>{{ notif.text }}</span>
@@ -46,21 +43,18 @@
       </div>
     }
 
-    <!-- Affichage d'erreur globale -->
     @if (errorMessage()) {
       <div class="error-banner" role="alert">
         {{ errorMessage() }}
       </div>
     }
 
-    <!-- Affichage en cours de chargement -->
     @if (loading()) {
       <div class="loading-spinner">
         <p>Chargement des logements...</p>
       </div>
     } @else {
 
-      <!-- Grille de cartes aérée (Pleine largeur) -->
       @if (units().length > 0) {
         <div class="cards-grid">
           @for (unit of units(); track unit.id) {
@@ -78,10 +72,9 @@
       }
     }
 
-    <!-- Modale de création / édition -->
     @if (showModal()) {
       <app-unit-modal
-        [propertyId]="propertyId || ''"
+        [propertyId]="propertyId() || ''"
         [unitToEdit]="selectedUnit()"
         (closed)="onModalClosed(false)"
         (saved)="onModalClosed(true)"

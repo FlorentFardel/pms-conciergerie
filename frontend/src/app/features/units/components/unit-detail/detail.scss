@@ -1,8 +1,21 @@
+/**
+ * @file detail.scss
+ * @module Features/Units/Components/UnitDetail
+ * @description Feuilles de styles Mobile-First du panneau de détails d'un logement.
+ * Gère la mise en page des métriques, la navigation par onglets et la zone de danger pour les actions sensibles.
+ */
+
+// =============================================================================
+// 1. VARIABLES LOCALES DE DESIGN SYSTEM
+// =============================================================================
 $color-primary: #2563eb;
 $color-text-main: #0f172a;
 $color-text-muted: #64748b;
 $color-border: #f1f5f9;
 
+// =============================================================================
+// 2. CONTENEUR ET HÔTE D'AFFICHAGE
+// =============================================================================
 :host {
   display: block;
   width: 100%;
@@ -15,6 +28,9 @@ $color-border: #f1f5f9;
   box-sizing: border-box;
 }
 
+// =============================================================================
+// 3. BANDEAUX D'ÉTAT (CHARGEMENT & ERREUR)
+// =============================================================================
 .state-banner {
   padding: 1.5rem 1rem;
   text-align: center;
@@ -22,6 +38,7 @@ $color-border: #f1f5f9;
   background-color: #f8fafc;
   margin-top: 1rem;
 
+  // État de chargement asynchrone
   &.loading {
     display: flex;
     flex-direction: column;
@@ -30,6 +47,7 @@ $color-border: #f1f5f9;
     color: $color-text-muted;
   }
 
+  // État d'erreur réseau ou serveur
   &.error {
     background-color: #fef2f2;
     color: #991b1b;
@@ -40,6 +58,7 @@ $color-border: #f1f5f9;
     gap: 1rem;
   }
 
+  // Indicateur visuel de chargement rotatif
   .spinner {
     width: 1.75rem;
     height: 1.75rem;
@@ -50,17 +69,23 @@ $color-border: #f1f5f9;
   }
 }
 
+// Animation de rotation du spinner
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
+// =============================================================================
+// 4. EN-TÊTE PRINCIPAL DE LA VUE
+// =============================================================================
 .detail-header {
   margin-bottom: 1rem;
 
+  // Boutons d'action supérieurs (ex: Retour)
   .header-actions {
     margin-bottom: 0.75rem;
   }
 
+  // Ligne de titre avec badge de type de logement
   .title-row {
     display: flex;
     align-items: center;
@@ -85,6 +110,9 @@ $color-border: #f1f5f9;
   }
 }
 
+// =============================================================================
+// 5. BARRE DE NAVIGATION PAR ONGLETS MÉTIERS
+// =============================================================================
 .tabs-header {
   display: flex;
   gap: 0.25rem;
@@ -94,10 +122,12 @@ $color-border: #f1f5f9;
   padding-bottom: 0.25rem;
   margin-bottom: 1.25rem;
 
+  // Masquage de la barre de défilement horizontale sur mobile
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 
+  // Style des éléments d'onglets
   .tab-btn {
     background: none;
     border: none;
@@ -110,6 +140,8 @@ $color-border: #f1f5f9;
     transition: all 0.15s ease;
 
     &:hover { color: $color-text-main; }
+    
+    // État de l'onglet actif
     &.active {
       color: $color-primary;
       border-bottom-color: $color-primary;
@@ -117,18 +149,23 @@ $color-border: #f1f5f9;
   }
 }
 
+// =============================================================================
+// 6. CONTENU DE L'ONGLET ET INFORMATIONS GÉNÉRALES
+// =============================================================================
 .info-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
+// Styles pour les messages d'attente ou fonctionnalités en cours
 .placeholder-text {
   color: $color-text-muted;
   font-size: 0.9rem;
   margin: 0;
 }
 
+// Pastille d'état actif/inactif
 .status-pill {
   font-size: 0.725rem;
   font-weight: 700;
@@ -140,5 +177,32 @@ $color-border: #f1f5f9;
   &.active {
     background-color: #f0fdf4;
     color: #166534;
+  }
+}
+
+// =============================================================================
+// 7. ZONE DE DANGER (SUPPRESSION SÉCURISÉE DE LOGEMENT)
+// =============================================================================
+.danger-zone {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #991b1b;
+  }
+
+  .danger-description {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #7f1d1d;
   }
 }

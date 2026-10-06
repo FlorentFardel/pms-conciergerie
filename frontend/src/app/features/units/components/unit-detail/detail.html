@@ -23,14 +23,13 @@
     <!-- EN-TÊTE DU DETAIL -->
     <header class="detail-header">
       <div class="header-actions">
-        <!-- variant="primary" pour le bouton bleu principal -->
         <app-ui-button variant="primary" (clicked)="goBack()">
           ← Retour aux logements
         </app-ui-button>
       </div>
 
       <div class="title-row">
-        <h2>{{ unit()?.unit_number }}</h2>
+        <h2>Logement {{ unit()?.unit_number }}</h2>
         <span class="type-badge">{{ unit()?.type }}</span>
       </div>
     </header>
@@ -47,7 +46,7 @@
     <!-- CONTENU DE L'ONGLET SÉLECTIONNÉ -->
     <main class="tab-content">
 
-      <!-- ONGLET 1 : INFORMATIONS GÉNÉRALES -->
+      <!-- ONGLET 1 : INFORMATIONS GÉNÉRALES (UN SEUL BLOC UNIQUE) -->
       @if (activeTab() === 'overview') {
         <app-ui-card title="Informations Générales">
           
@@ -55,6 +54,7 @@
             Éditer le logement
           </app-ui-button>
 
+          <!-- LISTE UNIQUE DES MÉTRIQUES DU LOGEMENT -->
           <div class="info-list">
             <app-ui-info-row label="NUMÉRO / RÉF.">{{ unit()?.unit_number }}</app-ui-info-row>
             <app-ui-info-row label="NOM PERSONNALISÉ">{{ unit()?.name || 'Non renseigné' }}</app-ui-info-row>
@@ -76,6 +76,20 @@
                 {{ unit()?.is_active ? 'Actif' : 'Inactif' }}
               </span>
             </app-ui-info-row>
+          </div>
+
+          <!-- ZONE SENSIPLE EN BAS DE CARTE (FIN DU CONTENU) -->
+          <div class="danger-zone">
+            <h4>Zone sensible</h4>
+            <p class="danger-description">
+              La suppression de ce logement est définitive et entraînera la perte de l'ensemble des données associées.
+            </p>
+            <app-ui-button 
+              variant="danger" 
+              (clicked)="deleteUnit()"
+            >
+              Supprimer ce logement
+            </app-ui-button>
           </div>
 
         </app-ui-card>
